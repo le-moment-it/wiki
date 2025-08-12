@@ -1,0 +1,22 @@
+name: Wiki.js Sync
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  force-wikijs-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Trigger Wiki.js Import and Force Sync
+        run: |
+          curl -X POST "https://docs.vasseurlaurent.com/api/admin/storage/git/import" \
+            -H "Authorization: Bearer ${{ secrets.WIKIJS_API_TOKEN }}" \
+            -H "Content-Type: application/json"
+          curl -X POST "https://docs.vasseurlaurent.com/api/admin/storage/git/force-sync" \
+            -H "Authorization: Bearer ${{ secrets.WIKIJS_API_TOKEN }}" \
+            -H "Content-Type: application/json"
