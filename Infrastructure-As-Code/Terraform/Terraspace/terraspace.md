@@ -1,3 +1,0 @@
-## Terraspace
-
-Content for terraspace
