@@ -4,7 +4,7 @@ const path = require("path");
 
 const WIKIJS_URL = "https://docs.vasseurlaurent.com";
 const WIKIJS_API_TOKEN = process.env.WIKIJS_API_TOKEN;
-const REPO_DOCS_PATH = ".";
+const REPO_DOCS_PATH = "./data/repo";
 
 async function gqlRequest(query, variables = {}) {
     const res = await fetch(`${WIKIJS_URL}/graphql`, {
