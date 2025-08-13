@@ -1,87 +1,91 @@
-const fetch = require('node-fetch');
-const { execSync } = require('child_process');
-const path = require('path');
+const fetch = require("node-fetch");
+const { execSync } = require("child_process");
+const path = require("path");
 
-// Configuration
-const WIKIJS_URL = 'https://docs.vasseurlaurent.com'; // Change to your Wiki.js URL
-const WIKIJS_API_TOKEN = process.env.WIKIJS_API_TOKEN; // Set this secret in GitHub Actions
-const REPO_DOCS_PATH = './docs'; // Local folder where your markdown files live; adjust as needed
+// ===== CONFIG =====
+const WIKIJS_URL = "https://docs.vasseurlaurent.com"; // your wiki
+const WIKIJS_API_TOKEN = process.env.WIKIJS_API_TOKEN; // set as GH Actions secret
+const REPO_DOCS_PATH = "."; // root folder of your markdown docs in repo
 
-// Helper to fetch all pages from Wiki.js (with paging)
-async function fetchAllPages() {
-    let pages = [];
-    let page = 1;
-    let totalPages = 1;
-
-    while (page <= totalPages) {
-        const response = await fetch(`${WIKIJS_URL}/api/pages?limit=50&page=${page}`, {
-            headers: { Authorization: `Bearer ${WIKIJS_API_TOKEN}` },
-        });
-        if (!response.ok) {
-            throw new Error(`Failed to fetch pages: ${response.statusText}`);
-        }
-        const data = await response.json();
-        pages = pages.concat(data.items);
-        totalPages = data.meta.pageCount;
-        page++;
-    }
-    return pages;
-}
-
-// Helper to delete a page by ID
-async function deletePage(pageId) {
-    const response = await fetch(`${WIKIJS_URL}/api/pages/${pageId}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${WIKIJS_API_TOKEN}` },
+// === GraphQL helper ===
+async function gqlRequest(query, variables = {}) {
+    const res = await fetch(`${WIKIJS_URL}/graphql`, {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${WIKIJS_API_TOKEN}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ query, variables }),
     });
-    if (!response.ok) {
-        throw new Error(`Failed to delete page ${pageId}: ${response.statusText}`);
+    if (!res.ok) {
+        throw new Error(`GraphQL request failed: ${res.status} ${res.statusText}`);
     }
-    console.log(`Deleted page ID: ${pageId}`);
+    const data = await res.json();
+    if (data.errors) {
+        throw new Error(`GraphQL errors: ${JSON.stringify(data.errors)}`);
+    }
+    return data.data;
 }
 
-// Helper to get local markdown file paths (relative to root docs folder)
-function getLocalMarkdownFiles() {
-    // Use git ls-files or find command to get markdown files in docs folder
-    let output;
-    try {
-        output = execSync(`git ls-files ${REPO_DOCS_PATH}/*.md`).toString();
-    } catch (error) {
-        throw new Error(`Failed to list Markdown files: ${error.message}`);
+// === Get all pages from Wiki.js ===
+async function fetchAllPages() {
+    const query = `
+    query {
+      pages {
+        id
+        slug
+        path
+      }
     }
-    const files = output.split('\n').filter(Boolean).map(f => path.basename(f, '.md').toLowerCase());
-    return files;
+  `;
+    const data = await gqlRequest(query);
+    return data.pages;
 }
 
-async function main() {
-    try {
-        console.log('Fetching Wiki.js pages...');
-        const pages = await fetchAllPages();
+// === Delete page by ID ===
+async function deletePage(pageId) {
+    const mutation = `
+    mutation ($id: Int!) {
+      pages {
+        delete(id: $id)
+      }
+    }
+  `;
+    await gqlRequest(mutation, { id: pageId });
+    console.log(`Deleted page ID ${pageId}`);
+}
 
-        console.log(`Found ${pages.length} pages in Wiki.js`);
-
-        const localFiles = getLocalMarkdownFiles();
-        console.log(`Found ${localFiles.length} markdown files in repo at ${REPO_DOCS_PATH}`);
-
-        // Identify pages in Wiki.js without corresponding Markdown files
-        const orphanPages = pages.filter(page => {
-            if (!page.slug) return false;
-            const pageSlug = page.slug.toLowerCase();
-            return !localFiles.includes(pageSlug);
+// === Get local markdown filename slugs ===
+function getLocalSlugs() {
+    const output = execSync(`git ls-files "${REPO_DOCS_PATH}" | grep -E "\\.md$"`).toString();
+    return output
+        .split("\n")
+        .filter(Boolean)
+        .map(f => {
+            const base = path.basename(f, ".md");
+            return base.toLowerCase();
         });
+}
 
-        console.log(`Found ${orphanPages.length} orphan pages to delete`);
+(async () => {
+    try {
+        console.log("Fetching pages from Wiki.js...");
+        const wikiPages = await fetchAllPages();
+        console.log(`Total pages in Wiki.js: ${wikiPages.length}`);
 
-        // Delete orphan pages
+        const localSlugs = getLocalSlugs();
+        console.log(`Total Markdown files in repo: ${localSlugs.length}`);
+
+        const orphanPages = wikiPages.filter(p => !localSlugs.includes(p.slug.toLowerCase()));
+        console.log(`Orphan pages found: ${orphanPages.length}`);
+
         for (const orphan of orphanPages) {
             await deletePage(orphan.id);
         }
 
-        console.log('Cleanup complete.');
-    } catch (error) {
-        console.error('Error:', error.message);
+        console.log("Wiki cleanup complete.");
+    } catch (err) {
+        console.error(err);
         process.exit(1);
     }
-}
-
-main();
+})();
