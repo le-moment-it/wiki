@@ -11,8 +11,16 @@ In this documentation, you will find topics related to CI/CD , Infrastructure as
 
 I hope you will enjoy this content !
 
-# Topics
 
-[Infrastructure as code*](/iac/)
+# Topics {.tabset}
+## First Tab
 
-{.links-list}
+Any content here will go into the first tab...
+
+## Second Tab
+
+Any content here will go into the second tab...
+
+## Third Tab
+
+Any content here will go into the third tab...
