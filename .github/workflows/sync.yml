@@ -14,9 +14,12 @@ jobs:
 
       - name: Trigger Wiki.js Import and Force Sync
         run: |
-          curl -X POST "https://docs.vasseurlaurent.com/api/admin/storage/git/import" \
+          curl -X POST "https://docs.vasseurlaurent.com/api/admin/storage/git/purge" \
             -H "Authorization: Bearer ${{ secrets.WIKIJS_API_TOKEN }}" \
             -H "Content-Type: application/json"
           curl -X POST "https://docs.vasseurlaurent.com/api/admin/storage/git/force-sync" \
+            -H "Authorization: Bearer ${{ secrets.WIKIJS_API_TOKEN }}" \
+            -H "Content-Type: application/json"
+          curl -X POST "https://docs.vasseurlaurent.com/api/admin/storage/git/import" \
             -H "Authorization: Bearer ${{ secrets.WIKIJS_API_TOKEN }}" \
             -H "Content-Type: application/json"
