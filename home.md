@@ -12,15 +12,7 @@ In this documentation, you will find topics related to CI/CD , Infrastructure as
 I hope you will enjoy this content !
 
 
-# Topics {.tabset}
-## First Tab
+# Topics
 
-Any content here will go into the first tab...
-
-## Second Tab
-
-Any content here will go into the second tab...
-
-## Third Tab
-
-Any content here will go into the third tab...
+- [:globe_with_meridians: Locales *Display the wiki in a different language or enable multilingual capabilities.*](/iac)
+{.links-list}
