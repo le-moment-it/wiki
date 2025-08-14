@@ -15,6 +15,6 @@ I hope you will enjoy this content !
 # Topics
 
 - [:desktop_computer: Infrastructure As Code *Define your infrastructure into reusable code*](/iac)
-- [:repeat_button: DevOps *Reduce your Time to Market with good practices*](/devops)
+- [:robot: DevOps *Reduce your Time to Market with good practices*](/devops)
 
 {.links-list}
