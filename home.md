@@ -14,5 +14,5 @@ I hope you will enjoy this content !
 
 # Topics
 
-- [:desktop_computer: Infrastructure As Code *Display the wiki in a different language or enable multilingual capabilities.*](/iac)
+- [:desktop_computer: Infrastructure As Code *Define your infrastructure into reusable code*](/iac)
 {.links-list}
