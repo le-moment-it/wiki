@@ -14,5 +14,5 @@ I hope you will enjoy this content !
 
 # Topics
 
-- [:mdi-CodeBrackets: Infrastructure As Code *Display the wiki in a different language or enable multilingual capabilities.*](/iac)
+- [:mdi-codebrackets: Infrastructure As Code *Display the wiki in a different language or enable multilingual capabilities.*](/iac)
 {.links-list}
