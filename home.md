@@ -3,7 +3,7 @@ title: Homepage
 published: true
 ---
 
-# :rocket: Welcome to my documentation
+# :rocket: Welcome to my Knowledge Base
 
 My name is Laurent, I am a DevOps and Cloud Infrastructure engineer since 6 years and I will share you my experiences and good practices regarding topics that I love.
 
@@ -14,6 +14,6 @@ I hope you will enjoy this content !
 
 # Topics
 
-- [:desktop_computer: Infrastructure As Code *Define your infrastructure into reusable code*](/iac)
-- [:delivery_truck: DevOps *Reduce your Time to Market with good practices*](/iac)
+- [:desktop_computer: - Infrastructure As Code *Define your infrastructure into reusable code*](/iac)
+- [:delivery_truck: - DevOps *Reduce your Time to Market with good practices*](/devops)
 {.links-list}
