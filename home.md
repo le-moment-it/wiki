@@ -14,5 +14,5 @@ I hope you will enjoy this content !
 
 # Topics
 
-- [:globe_with_meridians: Locales *Display the wiki in a different language or enable multilingual capabilities.*](/iac)
+- [:mdi-CodeBrackets: Infrastructure As Code *Display the wiki in a different language or enable multilingual capabilities.*](/iac)
 {.links-list}
