@@ -14,4 +14,4 @@ I've grouped these architecture design into different categories that you can fi
 
 # Categories
 
-- [:desktop_computer: Infrastructure As Code *Define your infrastructure into reusable code*](/iac)
+- [:desktop_computer: Backbone *Define your infrastructure into reusable code*](/iac)
