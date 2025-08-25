@@ -50,9 +50,63 @@ You are now ready to go !
 
 ### Create your dynamic inventory
 
+#### Objectives
+
 In my `hetzner` cloud , I have currently 2 machines, these are their properties :
 
 | Name | Labels |
 |-----------|-----------|
 | atlantis   | `environment=prod` \n `product=atlantis` \n `team=devops`  |
 | semaphore   | `environment=prod` \n `product=semaphore` \n `team=devops`  |
+
+What I want to achieve :
+
+- I want to list all runnings machines
+- According to the labels, I want to create dynamic groups :
+  - `environment_'label_environment'`
+  - `product_'label_product'`
+  - `team_devops`
+- I want to provide a "static" configuration where the `ansible_user` must be equal to `root`
+- The credentials used by ansible to query Hetzner will be an environment variable named `HCLOUD_TOKEN`
+
+#### Configuration
+
+My dynamic inventory looks like this :
+
+```yaml
+plugin: hetzner.hcloud.hcloud # Specify the plugins to use
+
+api_token: "{{ lookup('env', 'HCLOUD_TOKEN') }}" # Use environment variable as credential
+
+# Focus only on running machines
+status:
+  - running
+
+# Name of the group where all information regarding machines will be stored
+group: inventory
+
+# Merge extra vars into the available variables for composition
+use_extra_vars: true
+
+# Configuration that override default behaviour of the plugins.
+compose:
+  ansible_host: "{{ ipv4 }}"
+  image_name: "{{ image_name }}"
+  # Here I specify staticly the value ansible_user for all my machines
+  ansible_user: "'root'"
+
+# Key binding between labels found and groups to create.
+keyed_groups:
+# For each label value found for the label "environment"
+# it creates a group named environment_[value] and
+# add the host inside
+  - key: labels.environment
+    prefix: environment
+    separator: _
+  - key: labels.product
+    prefix: product
+    separator: _
+  - key: labels.team
+    prefix: team
+    separator: _
+```
