@@ -26,7 +26,7 @@ In this tutorial, I assume that you already have Ansible installed on your machi
 
 ## Install the Plugin
 
-The first step is to install the collection you need to gather your information (in my case, `hetzner.hcloud`):
+The first step is to install the collection you need to gather your information (in my case, [hetzner.hcloud](https://docs.ansible.com/ansible/latest/collections/hetzner/hcloud/hcloud_inventory.html#ansible-collections-hetzner-hcloud-hcloud-inventory)):
 
 ```shell
 ansible-galaxy collection install hetzner.hcloud
