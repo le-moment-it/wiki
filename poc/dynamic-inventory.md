@@ -33,7 +33,6 @@ ansible-galaxy collection install hetzner.hcloud
 ```
 
 > Alternatively, for a more CI-friendly approach, you can list your collection dependencies in a `requirements.yml` file like this:
-
 ```yaml
 collections:
   - name: hetzner.hcloud
