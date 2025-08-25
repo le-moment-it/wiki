@@ -110,3 +110,124 @@ keyed_groups:
     prefix: team
     separator: _
 ```
+
+You can now create your yaml inventory with the command :
+
+```
+ansible-inventory -i ./configuration/hcloud.yml --yaml --list > dynamic_inventory.yml
+```
+
+### Result & Verification
+
+This is the result you can expect :
+
+```
+all:
+  children:
+    environment_production:
+      hosts:
+        atlantis: {}
+        semaphore: {}
+    inventory:
+      hosts:
+        atlantis:
+          ansible_host: X.X.X.X # hidden for this documentation
+          ansible_user: root
+          architecture: x86
+          datacenter: nbg1-dc3
+          id: XXXXXXXXX # hidden for this documentation
+          image_id: 114690387
+          image_name: debian-12
+          image_os_flavor: debian
+          ipv4: X.X.X.X # hidden for this documentation
+          labels:
+            environment: production
+            product: atlantis
+            team: devops
+          location: nbg1
+          name: atlantis
+          private_networks: []
+          server_type: cx22
+          status: running
+          type: cx22
+        semaphore:
+          ansible_host: X.X.X.X # hidden for this documentation
+          ansible_user: root
+          architecture: x86
+          datacenter: nbg1-dc3
+          id: XXXXXXXXXX # hidden for this documentation
+          image_id: 114690387
+          image_name: debian-12
+          image_os_flavor: debian
+          ipv4: X.X.X.X # hidden for this documentation
+          labels:
+            environment: production
+            product: semaphore-ui
+            team: devops
+          location: nbg1
+          name: semaphore
+          private_networks: []
+          server_type: cx22
+          status: running
+          type: cx22
+    product_atlantis:
+      hosts:
+        atlantis: {}
+    product_semaphore_ui:
+      hosts:
+        semaphore: {}
+    team_devops:
+      hosts:
+        atlantis: {}
+        semaphore: {}
+
+```
+
+We can see that the inventory had been built such as :
+
+  - All hosts had been added to the group `inventory`
+  - Other groups (such as `environment_*`, `product_*` and `team_*` reference the hosts defined in `inventory`)
+
+Let's try it !
+
+To test properly that my inventory works correctly , I will use ansible `ping` plugin on my groups and verify which hosts are answering.
+
+Let's first ping the group `inventory` (group with all my hosts) :
+
+```bash
+ansible -i dynamic_inventory.yml inventory -m ping
+
+semaphore | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3.11"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+
+atlantis | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3.11"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+```
+
+I got two answers , great !
+
+Now I only want to ping my machine with the label `product=atlantis` :
+
+```
+ansible -i dynamic_inventory.yml product_atlantis -m ping
+
+atlantis | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3.11"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+```
+
+It works as expected !
