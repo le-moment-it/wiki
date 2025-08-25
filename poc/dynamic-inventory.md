@@ -20,11 +20,11 @@ Instead, I want to use [Ansible Dynamic Inventory](https://docs.ansible.com/ansi
 You can find the list of available plugins within their respective collections, for example :  [Ansible EC2](https://docs.ansible.com/ansible/latest/collections/amazon/aws/aws_ec2_inventory.html#ansible-collections-amazon-aws-aws-ec2-inventory) , [VMware VMs](https://docs.ansible.com/ansible/latest/collections/vmware/vmware/vms_inventory.html#ansible-collections-vmware-vmware-vms-inventory) , [Azure RMs](https://docs.ansible.com/ansible/latest/collections/azure/azcollection/azure_rm_inventory.html#ansible-collections-azure-azcollection-azure-rm-inventory)
 {.is-info}
 
-## Step-by-Step Guide
+# Step-by-Step Guide
 
 In this tutorial, I assume that you already have Ansible installed on your machine.
 
-### Install the Plugin
+## Install the Plugin
 
 The first step is to install the collection you need to gather your information (in my case, `hetzner.hcloud`):
 
@@ -42,9 +42,9 @@ And install it with the command: `ansible-galaxy install -r requirements.yml`
 
 You are now ready to proceed!
 
-### Create Your Dynamic Inventory
+## Create Your Dynamic Inventory
 
-#### Objectives
+### Objectives
 
 In my Hetzner cloud, I currently have 2 machines with the following properties:
 
@@ -63,7 +63,7 @@ What I want to achieve:
 - Provide a "static" configuration where `ansible_user` is set to `root`
 - Use credentials from an environment variable named `HCLOUD_TOKEN` for querying Hetzner
 
-#### Configuration
+### Configuration
 
 My dynamic inventory configuration looks like this:
 
@@ -111,7 +111,7 @@ You can now create your YAML inventory with the command:
 ansible-inventory -i ./configuration/hcloud.yml --yaml --list > dynamic_inventory.yml
 ```
 
-### Result & Verification
+## Result & Verification
 
 This is the result you can expect:
 
@@ -235,6 +235,6 @@ Overall, these are the results of my tests (a ✅ represents a successful ping):
 | environment_production  | ✅ | ✅  |
 | team_devops  | ✅ | ✅  |
 
-## Conclusion & Next Steps
+# Conclusion & Next Steps
 
 With this dynamic inventory configured, I can dynamically update my inventory and call the created groups with Ansible playbooks to configure my servers. Moreover, by creating a job in my CI/CD pipeline to automatically update my inventory file, when I use [semaphore-ui](./semaphore-ui.md) to apply Ansible tasks, I can ensure that my inventory will always be up to date.
