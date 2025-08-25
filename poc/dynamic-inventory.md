@@ -1,6 +1,6 @@
 ---
 title: Ansible Dynamic Inventory
-description: Step by step dynamic inventory creation
+description: Step-by-step dynamic inventory creation
 published: true
 ---
 
@@ -12,69 +12,69 @@ published: true
 
 ## Context
 
-I've recently tested the solution [semaphore-ui](./semaphore-ui.md). One issue that I encountered is that the inventory where I was applying my ansible playbook on was static. It means that , each hosts needed to be defined manually into the file `inventory.yml`. Obviously, updating each this file each time I want to deploy a new machine is a boring and repetitive task.
+I recently tested the [semaphore-ui](./semaphore-ui.md) solution. One issue I encountered was that the inventory where I was applying my Ansible playbook was static. This means that each host needed to be defined manually in the `inventory.yml` file. Obviously, updating this file every time I want to deploy a new machine is a tedious and repetitive task.
 
-Instead, I want to use [Ansible Dynamic Inventory](https://docs.ansible.com/ansible/latest/inventory_guide/intro_dynamic_inventory.html#other-inventory-scripts)
+Instead, I want to use [Ansible Dynamic Inventory](https://docs.ansible.com/ansible/latest/inventory_guide/intro_dynamic_inventory.html#other-inventory-scripts).
 
-
-> In this presentation, I will only showcase Inventory created from Hetzner Cloud API since it is the cloud provider where I deploy all my machines to perform my PoC but you can use different inventory pluggins according to your need.
-You can find the list of plugins available inside their own collection, for example :
+> In this guide, I will only demonstrate inventory creation from the Hetzner Cloud API since it is the cloud provider where I deploy all my machines to perform my proof of concept (PoC). However, you can use different inventory plugins according to your needs.
+You can find the list of available plugins within their respective collections, for example:
 
   - [Ansible EC2](https://docs.ansible.com/ansible/latest/collections/amazon/aws/aws_ec2_inventory.html#ansible-collections-amazon-aws-aws-ec2-inventory)
-  - [Vmware VMs](https://docs.ansible.com/ansible/latest/collections/vmware/vmware/vms_inventory.html#ansible-collections-vmware-vmware-vms-inventory)
+  - [VMware VMs](https://docs.ansible.com/ansible/latest/collections/vmware/vmware/vms_inventory.html#ansible-collections-vmware-vmware-vms-inventory)
   - [Azure RMs](https://docs.ansible.com/ansible/latest/collections/azure/azcollection/azure_rm_inventory.html#ansible-collections-azure-azcollection-azure-rm-inventory)
   - ...
 {.is-info}
 
-## Step to Steps
+## Step-by-Step Guide
 
-In this tutorial, I will consider that you already have Ansible installed on your machine.
+In this tutorial, I assume that you already have Ansible installed on your machine.
 
-### Install the plugin
+### Install the Plugin
 
-The first step to do is to install the collection you will need to gather your informations (for me `hetnzer.cloud`)
+The first step is to install the collection you need to gather your information (in my case, `hetzner.hcloud`):
 
 ```shell
 ansible-galaxy collection install hetzner.hcloud
 ```
-> Alternatively, for a better CI friendly approach, you can list your collection dependencies into a `requirement.yml` file such as :
 
-```
+> Alternatively, for a more CI-friendly approach, you can list your collection dependencies in a `requirements.yml` file like this:
+
+```yaml
 collections:
   - name: hetzner.hcloud
 ```
-And install it with the command : `ansible-galaxy install -r requirements.yml`
+And install it with the command: `ansible-galaxy install -r requirements.yml`
 {.is-info}
 
-You are now ready to go !
+You are now ready to proceed!
 
-### Create your dynamic inventory
+### Create Your Dynamic Inventory
 
 #### Objectives
 
-In my `hetzner` cloud , I have currently 2 machines, these are their properties :
+In my Hetzner cloud, I currently have 2 machines with the following properties:
 
 | Name | Labels |
 |-----------|-----------|
 | atlantis   | `environment=prod` \n `product=atlantis` \n `team=devops`  |
 | semaphore   | `environment=prod` \n `product=semaphore` \n `team=devops`  |
 
-What I want to achieve :
+What I want to achieve:
 
-- I want to list all runnings machines
-- According to the labels, I want to create dynamic groups :
+- List all running machines
+- Create dynamic groups based on labels:
   - `environment_'label_environment'`
   - `product_'label_product'`
   - `team_devops`
-- I want to provide a "static" configuration where the `ansible_user` must be equal to `root`
-- The credentials used by ansible to query Hetzner will be an environment variable named `HCLOUD_TOKEN`
+- Provide a "static" configuration where `ansible_user` is set to `root`
+- Use credentials from an environment variable named `HCLOUD_TOKEN` for querying Hetzner
 
 #### Configuration
 
-My dynamic inventory looks like this :
+My dynamic inventory configuration looks like this:
 
 ```yaml
-plugin: hetzner.hcloud.hcloud # Specify the plugins to use
+plugin: hetzner.hcloud.hcloud # Specify the plugin to use
 
 api_token: "{{ lookup('env', 'HCLOUD_TOKEN') }}" # Use environment variable as credential
 
@@ -82,24 +82,24 @@ api_token: "{{ lookup('env', 'HCLOUD_TOKEN') }}" # Use environment variable as c
 status:
   - running
 
-# Name of the group where all information regarding machines will be stored
+# Name of the group where all machine information will be stored
 group: inventory
 
-# Merge extra vars into the available variables for composition
+# Merge extra variables into the available variables for composition
 use_extra_vars: true
 
-# Configuration that override default behaviour of the plugins.
+# Configuration that overrides default plugin behavior
 compose:
   ansible_host: "{{ ipv4 }}"
   image_name: "{{ image_name }}"
-  # Here I specify staticly the value ansible_user for all my machines
+  # Here I specify the ansible_user value statically for all my machines
   ansible_user: "'root'"
 
-# Key binding between labels found and groups to create.
+# Key binding between labels found and groups to create
 keyed_groups:
-# For each label value found for the label "environment"
+# For each label value found for the "environment" label,
 # it creates a group named environment_[value] and
-# add the host inside
+# adds the host inside
   - key: labels.environment
     prefix: environment
     separator: _
@@ -111,17 +111,17 @@ keyed_groups:
     separator: _
 ```
 
-You can now create your yaml inventory with the command :
+You can now create your YAML inventory with the command:
 
-```
+```shell
 ansible-inventory -i ./configuration/hcloud.yml --yaml --list > dynamic_inventory.yml
 ```
 
 ### Result & Verification
 
-This is the result you can expect :
+This is the result you can expect:
 
-```
+```yaml
 all:
   children:
     environment_production:
@@ -180,19 +180,18 @@ all:
       hosts:
         atlantis: {}
         semaphore: {}
-
 ```
 
-We can see that the inventory had been built such as :
+We can see that the inventory has been built as follows:
 
-  - All hosts had been added to the group `inventory`
-  - Other groups (such as `environment_*`, `product_*` and `team_*` reference the hosts defined in `inventory`)
+  - All hosts have been added to the `inventory` group
+  - Other groups (such as `environment_*`, `product_*`, and `team_*`) reference the hosts defined in `inventory`
 
-Let's try it !
+Let's test it!
 
-To test properly that my inventory works correctly , I will use ansible `ping` plugin on my groups and verify which hosts are answering.
+To properly test that my inventory works correctly, I will use the Ansible `ping` module on my groups and verify which hosts are responding.
 
-Let's first ping the group `inventory` (group with all my hosts) :
+Let's first ping the `inventory` group (group with all my hosts):
 
 ```bash
 ansible -i dynamic_inventory.yml inventory -m ping
@@ -214,11 +213,11 @@ atlantis | SUCCESS => {
 }
 ```
 
-I got two answers , great !
+I received two responses—excellent!
 
-Now I only want to ping my machine with the label `product=atlantis` :
+Now I only want to ping my machine with the label `product=atlantis`:
 
-```
+```bash
 ansible -i dynamic_inventory.yml product_atlantis -m ping
 
 atlantis | SUCCESS => {
@@ -230,9 +229,9 @@ atlantis | SUCCESS => {
 }
 ```
 
-It works as expected !
+It works as expected!
 
-More globally these are the result of my tests (a ✅ represents a ping successfull ) :
+Overall, these are the results of my tests (a ✅ represents a successful ping):
 
 | group | atlantis | semaphore |
 |-----------|-----------|-----------|
@@ -241,3 +240,7 @@ More globally these are the result of my tests (a ✅ represents a ping successf
 | product_semaphore_ui  | ❌ | ✅  |
 | environment_production  | ✅ | ✅  |
 | team_devops  | ✅ | ✅  |
+
+## Conclusion & Next Steps
+
+With this dynamic inventory configured, I can dynamically update my inventory and call the created groups with Ansible playbooks to configure my servers. Moreover, by creating a job in my CI/CD pipeline to automatically update my inventory file, when I use [semaphore-ui](./semaphore-ui.md) to apply Ansible tasks, I can ensure that my inventory will always be up to date.
