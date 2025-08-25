@@ -45,3 +45,14 @@ collections:
 ```
 And install it with the command : `ansible-galaxy install -r requirements.yml`
 {.is-info}
+
+You are now ready to go !
+
+### Create your dynamic inventory
+
+In my `hetzner` cloud , I have currently 2 machines, these are their properties :
+
+| Name | Labels |
+|-----------|-----------|
+| atlantis   | `environment=prod` \n `product=atlantis` \n `team=devops`  |
+| semaphore   | `environment=prod` \n `product=semaphore` \n `team=devops`  |
