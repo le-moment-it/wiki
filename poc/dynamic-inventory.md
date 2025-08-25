@@ -4,13 +4,13 @@ description: Step-by-step dynamic inventory creation
 published: true
 ---
 
-## Information
+# Information
 
 | Project | Version | Date |
 |-----------|-----------|-----------|
 | [ansible](https://docs.ansible.com/)   | core 2.17.5  | 2025-08-25  |
 
-## Context
+# Context
 
 I recently tested the [semaphore-ui](./semaphore-ui.md) solution. One issue I encountered was that the inventory where I was applying my Ansible playbook was static. This means that each host needed to be defined manually in the `inventory.yml` file. Obviously, updating this file every time I want to deploy a new machine is a tedious and repetitive task.
 
