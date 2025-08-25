@@ -18,7 +18,6 @@ Instead, I want to use [Ansible Dynamic Inventory](https://docs.ansible.com/ansi
 
 > In this guide, I will only demonstrate inventory creation from the Hetzner Cloud API since it is the cloud provider where I deploy all my machines to perform my proof of concept (PoC). However, you can use different inventory plugins according to your needs.
 You can find the list of available plugins within their respective collections, for example:
-
   - [Ansible EC2](https://docs.ansible.com/ansible/latest/collections/amazon/aws/aws_ec2_inventory.html#ansible-collections-amazon-aws-aws-ec2-inventory)
   - [VMware VMs](https://docs.ansible.com/ansible/latest/collections/vmware/vmware/vms_inventory.html#ansible-collections-vmware-vmware-vms-inventory)
   - [Azure RMs](https://docs.ansible.com/ansible/latest/collections/azure/azcollection/azure_rm_inventory.html#ansible-collections-azure-azcollection-azure-rm-inventory)
@@ -56,8 +55,8 @@ In my Hetzner cloud, I currently have 2 machines with the following properties:
 
 | Name | Labels |
 |-----------|-----------|
-| atlantis   | `environment=prod` \n `product=atlantis` \n `team=devops`  |
-| semaphore   | `environment=prod` \n `product=semaphore` \n `team=devops`  |
+| atlantis   | `environment=prod` <br> `product=atlantis` <br> `team=devops`  |
+| semaphore   | `environment=prod` <br> `product=semaphore` <br> `team=devops`  |
 
 What I want to achieve:
 
