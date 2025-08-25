@@ -17,11 +17,7 @@ I recently tested the [semaphore-ui](./semaphore-ui.md) solution. One issue I en
 Instead, I want to use [Ansible Dynamic Inventory](https://docs.ansible.com/ansible/latest/inventory_guide/intro_dynamic_inventory.html#other-inventory-scripts).
 
 > In this guide, I will only demonstrate inventory creation from the Hetzner Cloud API since it is the cloud provider where I deploy all my machines to perform my proof of concept (PoC). However, you can use different inventory plugins according to your needs.
-You can find the list of available plugins within their respective collections, for example:
-  - [Ansible EC2](https://docs.ansible.com/ansible/latest/collections/amazon/aws/aws_ec2_inventory.html#ansible-collections-amazon-aws-aws-ec2-inventory)
-  - [VMware VMs](https://docs.ansible.com/ansible/latest/collections/vmware/vmware/vms_inventory.html#ansible-collections-vmware-vmware-vms-inventory)
-  - [Azure RMs](https://docs.ansible.com/ansible/latest/collections/azure/azcollection/azure_rm_inventory.html#ansible-collections-azure-azcollection-azure-rm-inventory)
-  - ...
+You can find the list of available plugins within their respective collections, for example :  [Ansible EC2](https://docs.ansible.com/ansible/latest/collections/amazon/aws/aws_ec2_inventory.html#ansible-collections-amazon-aws-aws-ec2-inventory) , [VMware VMs](https://docs.ansible.com/ansible/latest/collections/vmware/vmware/vms_inventory.html#ansible-collections-vmware-vmware-vms-inventory) , [Azure RMs](https://docs.ansible.com/ansible/latest/collections/azure/azcollection/azure_rm_inventory.html#ansible-collections-azure-azcollection-azure-rm-inventory)
 {.is-info}
 
 ## Step-by-Step Guide
