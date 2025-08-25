@@ -231,3 +231,13 @@ atlantis | SUCCESS => {
 ```
 
 It works as expected !
+
+More globally these are the result of my tests (a ✅ represents a ping successfull ) :
+
+| group | atlantis | semaphore |
+|-----------|-----------|-----------|
+| inventory   | ✅  | ✅  |
+| product_atlantis   | ✅  | ❌  |
+| product_semaphore_ui  | ❌ | ✅  |
+| environment_production  | ✅ | ✅  |
+| team_devops  | ✅ | ✅  |
