@@ -42,7 +42,26 @@ Compared to other programmatical languages, HCL (Terraform language) is pretty e
 
 Even if I never read an article about it, a **need of `stack` abstraction had appeared**.
 
-A `stack` is a group of one or multiple **`indivisible`** piece of infrastructure.
+A `stack` is a group of one or multiple **`indivisible`** piece of infrastructure that attend to work together. From now on, I will call these pieces **`components`**.
+
+For example, if I wanted to create a `stack` to deploy a new `instance`, maybe this `stack` would be a combination of the following `components` :
+
+- [network](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/network) : Network where the instance will be deployed
+- [subnet](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/network_subnet) : Definition of the `subnets` inside the `network`
+- [instance](https://registry.terraform.io/modules/terraform-hetzner-modules/server/hetzner/latest) : `Instance` the actual instance
+
+More and more , all infrastructure as code tools tends to focus be more `stack` focus. Among many examples, we can find : 👇
+
+### Stack examples
+#### Atmos
+TEST
+#### Terramate
+TEST
+#### Terragrunt
+TEST
+
+
+
 
 ## Must be `mono-repository` capable
 
