@@ -1,5 +1,5 @@
 ---
-title: Atmos -- A Modern Composable Framework
+title: Atmos, A Modern Composable Framework
 description: Blueprint creation for Terraform/OpenTofu infrastructure with YAML
 published: true
 ---
@@ -30,3 +30,4 @@ That's why, even if I work a lot with `Terraspace` , I need now to check which t
 
 
 # Wrapper requirements
+
