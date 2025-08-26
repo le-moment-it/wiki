@@ -52,7 +52,7 @@ For example, if I wanted to create a `stack` to deploy a new `instance`, maybe t
 
 More and more , all infrastructure as code tools tends to focus be more `stack` focus. Among many examples, we can find : 👇
 
-### Stack examples
+### Stack examples {.tabset}
 #### Atmos
 TEST
 #### Terramate
