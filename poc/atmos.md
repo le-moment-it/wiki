@@ -31,9 +31,15 @@ That's why, even if I work a lot with `Terraspace` , I need now to check which t
 
 # Wrapper requirements
 
-> What makes a tool a good wrapper to Terraform or OpenTofu ?
+> What makes a tool a **good wrapper** to Terraform or OpenTofu ?
 
 **That's the eternal question**. I could (and will) write an entire article about how to manage **Infrastructure As Code** repositories. However, I will try to remain concede in this part and only focus on Terraform/OpenTofu related repositories.
 
-## Must be `mono-repository` friendly
 
+## Must be `stack` focused
+
+## Must be `mono-repository` capable
+
+## Must be `configuration as code` friendly
+
+## Must provide a `centralised` experience
