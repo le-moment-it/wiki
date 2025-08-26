@@ -9,6 +9,9 @@ published: true
 |-----------|-----------|-----------|
 | [atmos](https://atmos.tools/)   | 1.187.0 | 2025-08-26  |
 
+> In this article, I will give share my opinion and experience regarding how a Terraform/OpenTofu should be maintained and why a tool is good or not. If you don't agree with my point of view, feel free to reach out so we can discuss and share our opinions and experiences about these tools we love to use ♥️
+{.is-warning}
+
 # Context
 Terraform (& OpenTofu) are ,by far, became the standard to deploy infrastructure in the cloud. I personnaly use Terraform since 2019 and I accumulated a lot of experience using these tools. I quickly understood that Terraform would become easier to maintain and scale if I could wrap it with another tool to keep the infrastructure DRY (Don't Repeat Yourself).
 
