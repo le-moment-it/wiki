@@ -625,3 +625,142 @@ In this last section, I will present you the result of my researches and how I w
 
 In my mono-repository, I want to be able to :
 
+- Define my components
+- Create agnosticks stacks (that I will call `layers`) where I can define default logic between my components. I also want to define the default logic and dependencies between my components so I can only focus on context variable when I instanciate my stack
+- Have a folder dedicated to context variables. By context variables, I mean, any variable that I will provide to the `layers` to instanciate them. It also gathers, `backends`, `locations` and `schemas` verifications.
+- Have a folder that list my stack instanciation named `orgs`.
+- Add OPA policies
+
+## `mono-repository` presentation
+
+My mono-repository can be found here [Atmos example](https://gitlab.com/tavern9121/atmos).
+
+In this example, I have two `components` stacked with the layer `infrastructure.yml :
+
+- `network` : Simple network and subnet created
+- `instance` : Server created in the subnet create in the component `network`
+
+#### Definition {.tabset}
+
+##### Component : Network
+
+```hcl
+# ./components/terraform/network/main.tf
+resource "hcloud_network" "this" {
+  name     = "network-${var.environment}"
+  ip_range = var.ip_range
+
+  labels = {
+    "environment" = var.environment,
+    "component"   = local.component
+  }
+}
+
+resource "hcloud_network_subnet" "public_subnet" {
+  type         = "cloud"
+  network_id   = hcloud_network.this.id
+  network_zone = var.public_subnet_location
+  ip_range     = cidrsubnet(var.ip_range, 8, 1)
+}
+
+```
+
+##### Component : Instance
+
+```hcl
+# ./components/terraform/instance/main.tf
+...
+resource "hcloud_server" "this" {
+  name         = var.name
+  image        = var.image
+  server_type  = var.server_type
+  location     = var.location
+  ssh_keys     = [hcloud_ssh_key.this.name]
+  firewall_ids = [hcloud_firewall.this.id]
+
+  lifecycle {
+    ignore_changes = [ssh_keys]
+  }
+
+  network {
+    network_id = var.network_id
+    ip         = cidrhost(var.public_subnet_ip_range, 1)
+  }
+}
+```
+
+
+##### Layer : infrastructure
+
+```yaml
+components:
+  terraform:
+    network:
+      metadata:
+        component: network
+    instance:
+      settings:
+        depends_on:
+          1:
+            component: network # Dependency definition
+      metadata:
+        component: instance
+      vars:
+        # Output from network into instance inputs with mocking
+        network_id: !terraform.output network "network_id // ""123"""  
+        public_subnet_ip_range: !terraform.output network "public_subnet_ip_range // ""10.0.1.0/24"""
+
+```
+
+####
+
+Then I've created a `mixins` folder. In this folder, I store any context variable values :
+
+```yaml
+# mixins file tree
+├── global # Global variables that I want to parse to all my stacks
+│   ├── backends # Gather all backends configurations
+│   │   └── gitlab.yaml.tmpl
+│   ├── providers # Credentials to connect to cloud provider
+│   │   └── hetzner-cloud.yaml
+│   └── schemas # Global validation rules that I want to pass to my stacks
+│       └── environment.yaml
+└── locations
+    └── ngb1.yaml # Specific variables to the location ngb1.yaml
+```
+
+Finally, all these configuration are gathered in the folder `orgs` :
+
+```yaml
+.
+├── dev
+│   ├── _defaults.yaml
+│   └── infrastructure.yaml
+├── prod
+└── staging
+```
+
+In `_defaults.yml`, I put any variable related to the fact that it is the `default` environment. 
+
+In `insfrastructure.yaml`, I instanciate my stack `infrastructure` defined in my `layers` :
+
+```yaml
+import:
+  - mixins/global/backends/gitlab
+  - mixins/global/providers/hetzner-cloud
+  - mixins/global/schemas/environment
+  - mixins/locations/ngb1
+  - orgs/dev/_defaults
+  - layers/infrastructure
+
+components:
+  terraform:
+    network:
+      vars:
+        ip_range: 10.0.0.0/16
+    instance:
+      vars:
+        name: "instance-{{ .vars.environment }}"
+        ssh_public_key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINkRVwkIdjqpWXHKlQ+28+rGFFrlsdWhqqmfL9U6Nb0m
+
+```
