@@ -271,3 +271,38 @@ openssl verify -CAfile certs/client_c_root_ca.crt -untrusted certs/client_c_inte
 #### Results
 
 ![Step6](/assets/security/step6.png =100%x)
+
+### STEP 7: Create Server Certificate for Client C
+
+### {.tabset}
+
+#### Commands
+
+Client C needs its own server certificate for the mTLS connection :
+
+```bash
+cd client_c_ca
+
+# Generate server private key for Client C
+openssl genrsa -out private/client_c_server.key 2048
+
+# Create server CSR for Client C
+openssl req -new -key private/client_c_server.key \
+    -out csr/client_c_server.csr \
+    -subj "/C=FR/ST=Iles-De-France/L=Paris/O=Client C Organization/OU=Server Services/CN=client-c.local"
+
+# Self-sign the server certificate using Client C's intermediate CA
+openssl x509 -req -in csr/client_c_server.csr \
+    -CA certs/client_c_intermediate_ca.crt \
+    -CAkey private/client_c_intermediate_ca.key \
+    -CAcreateserial \
+    -out certs/client_c_server.crt \
+    -days 365 -sha256 \
+    -extensions v3_server \
+    -extfile <(echo -e "[v3_server]\nsubjectKeyIdentifier = hash\nauthorityKeyIdentifier = keyid,issuer\nbasicConstraints = CA:FALSE\nkeyUsage = critical, digitalSignature, keyEncipherment\nextendedKeyUsage = serverAuth\nsubjectAltName = @alt_names\n[alt_names]\nDNS.1 = client-c.local\nDNS.2 = localhost\nIP.1 = 127.0.0.1")
+
+```
+
+#### Result
+
+![Step7](/assets/security/step7.png =100%x)
