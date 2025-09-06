@@ -87,4 +87,98 @@ openssl x509 -in certs/client_b_root_ca.crt -text -noout
 
 #### Result
 
-![Step1](/assets/security/step2.png =100%x)
+![Step2](/assets/security/step2.png =100%x)
+
+### Generate Intermediate CA Certificate for Client C (optional)
+
+### {.tabset}
+
+#### Commands
+
+Create an intermediate CA for Client C :
+
+```bash
+cd client_c_ca
+
+# Generate intermediate CA private key
+openssl genrsa -aes256 -out private/client_c_intermediate_ca.key 4096
+
+# Create intermediate CA certificate signing request
+openssl req -new -key private/client_c_intermediate_ca.key \
+    -out csr/client_c_intermediate_ca.csr \
+    -subj "/C=FR/ST=Iles-De-France/L=Paris/O=Client C Organization/OU=Certificate Authority/CN=Client C Intermediate CA"
+
+# Sign the intermediate CSR with the root CA
+openssl x509 -req -in csr/client_c_intermediate_ca.csr \
+    -CA certs/client_c_root_ca.crt \
+    -CAkey private/client_c_root_ca.key \
+    -CAcreateserial \
+    -out certs/client_c_intermediate_ca.crt \
+    -days 1825 -sha256 \
+    -extensions v3_intermediate_ca \
+    -extfile <(echo -e "[v3_intermediate_ca]\nsubjectKeyIdentifier = hash\nauthorityKeyIdentifier = keyid:always,issuer\nbasicConstraints = critical, CA:true, pathlen:0\nkeyUsage = critical, digitalSignature, cRLSign, keyCertSign")
+
+```
+
+Verification commands :
+
+```bash
+# Verify the intermediate certificate against root CA
+openssl verify -CAfile certs/client_c_root_ca.crt certs/client_c_intermediate_ca.crt
+
+# Check certificate chain
+openssl x509 -in certs/client_c_intermediate_ca.crt -text -noout | grep -A2 "Issuer\|Subject"
+
+```
+
+#### Results
+
+![Step3](/assets/security/step3.png =100%x)
+
+
+### Generate Intermediate CA Certificate for Client B (optional)
+
+### {.tabset}
+
+#### Commands
+
+Create an intermediate CA for Client B :
+
+```bash
+cd client_b_ca
+
+# Generate intermediate CA private key
+openssl genrsa -aes256 -out private/client_b_intermediate_ca.key 4096
+
+# Create intermediate CA certificate signing request
+openssl req -new -key private/client_b_intermediate_ca.key \
+    -out csr/client_b_intermediate_ca.csr \
+    -subj "/C=FR/ST=Iles-De-France/L=Paris/O=Client B Organization/OU=Certificate Authority/CN=Client B Intermediate CA"
+
+# Sign the intermediate CSR with the root CA
+openssl x509 -req -in csr/client_b_intermediate_ca.csr \
+    -CA certs/client_b_root_ca.crt \
+    -CAkey private/client_b_root_ca.key \
+    -CAcreateserial \
+    -out certs/client_b_intermediate_ca.crt \
+    -days 1825 -sha256 \
+    -extensions v3_intermediate_ca \
+    -extfile <(echo -e "[v3_intermediate_ca]\nsubjectKeyIdentifier = hash\nauthorityKeyIdentifier = keyid:always,issuer\nbasicConstraints = critical, CA:true, pathlen:0\nkeyUsage = critical, digitalSignature, cRLSign, keyCertSign")
+
+```
+
+Verification Commands :
+
+```bash
+# Verify the intermediate certificate against root CA
+openssl verify -CAfile certs/client_b_root_ca.crt certs/client_b_intermediate_ca.crt
+
+# Check certificate details
+openssl x509 -in certs/client_b_intermediate_ca.crt -text -noout | grep -A2 "Issuer\|Subject"
+
+```
+
+
+#### Results
+
+![Step4](/assets/security/step4.png =100%x)
