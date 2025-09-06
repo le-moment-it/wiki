@@ -57,7 +57,7 @@ openssl x509 -in certs/client_c_root_ca.crt -text -noout
 
 #### Result
 
-![Step1](/assets/security/step1.jpg =100%x)
+![Step1](/assets/security/step1.png =100%x)
 
 
 ### STEP 2: Generate CA Root Certificate for Client B
