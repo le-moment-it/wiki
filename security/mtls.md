@@ -33,7 +33,7 @@ These will be the following steps :
 
 First, create the directory structure and generate Client C's root CA:
 
-```
+```bash
 # Create directory structure for Client C CA
 mkdir -p client_c_ca/{certs,private,csr}
 cd client_c_ca
@@ -47,6 +47,36 @@ openssl req -x509 -new -nodes -key private/client_c_root_ca.key -sha256 -days 36
     -subj "/C=FR/ST=Iles-De-France/L=Paris/O=Client C Organization/OU=IT Department/CN=Client C Root CA"
 ```
 
+Verification Command :
+
+```bash
+openssl x509 -in certs/client_c_root_ca.crt -text -noout
+```
+
 #### Result
 
 ![Step1](/assets/security/step1.jpg =100%x)
+
+### Generate CA Root Certificate for Client B {.tabset}
+### {.tabset}
+
+```bash
+# Create directory structure for Client B CA
+mkdir -p client_b_ca/{certs,private,csr}
+cd client_b_ca
+
+# Generate Client B root CA private key
+openssl genrsa -aes256 -out private/client_b_root_ca.key 4096
+
+# Generate Client B root CA certificate (self-signed)
+openssl req -x509 -new -nodes -key private/client_b_root_ca.key -sha256 -days 3650 \
+    -out certs/client_b_root_ca.crt \
+    -subj "/C=FR/ST=Iles-De-France/L=Paris/O=Client B Organization/OU=IT Department/CN=Client B Root CA"
+```
+
+Verification command :
+
+```bash
+# Verify the root CA certificate
+openssl x509 -in certs/client_b_root_ca.crt -text -noout
+```
