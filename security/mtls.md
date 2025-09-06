@@ -28,7 +28,9 @@ These will be the following steps :
 ## Step to step workshop
 
 ### Generate CA Root Certificate for Client C
+
 ### {.tabset}
+
 #### Commands
 
 First, create the directory structure and generate Client C's root CA:
@@ -57,7 +59,9 @@ openssl x509 -in certs/client_c_root_ca.crt -text -noout
 
 ![Step1](/assets/security/step1.jpg =100%x)
 
+
 ### Generate CA Root Certificate for Client B
+
 ### {.tabset}
 
 ```bash
@@ -80,3 +84,7 @@ Verification command :
 # Verify the root CA certificate
 openssl x509 -in certs/client_b_root_ca.crt -text -noout
 ```
+
+#### Result
+
+![Step1](/assets/security/step2.png =100%x)
