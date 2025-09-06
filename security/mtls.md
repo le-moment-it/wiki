@@ -383,50 +383,24 @@ openssl s_client -connect localhost:8443 \
 
 ## mTLS Handshake Process
 
-Step 1 : Client Hello
+```mermaid
+sequenceDiagram
+    participant Client_B as Client B
+    participant Client_C as Client C
 
-```text
-Client B → Client C: TLS Client Hello
-- Supported cipher suites
-- TLS version
-- Random number
+    Note over Client_B,Client_C: mTLS Handshake Process with Certificates and Keys
 
-```
+    Client_B->>Client_C: Client Hello (supported cipher suites, TLS version)
+    Client_C->>Client_B: Server Hello (chosen cipher suite)
+    Client_C->>Client_B: Send Server Certificate\n(cert: client_c_server.crt, key: private/client_c_server.key)\nIncludes chain: client_c_intermediate_ca.crt + client_c_root_ca.crt
+    Client_C->>Client_B: Request Client Certificate
+    Client_B->>Client_C: Send Client Certificate\n(cert: client_b_signed_by_client_c.crt, key: client_b.key)\nIncludes chain: client_c_intermediate_ca.crt + client_c_root_ca.crt
+    Client_B->>Client_C: Client Key Exchange\n(proves possession of private key: client_b.key)
+    Client_B->>Client_C: Certificate Verify\n(verifies client cert validity signed by Client C's CA)
+    Client_C->>Client_B: Server Finished
+    Client_B->>Client_C: Client Finished
 
-Step 2: Server Hello + Server Certificate
-
-```text
-Client C → Client B: 
-- Server Hello (cipher suite selection)
-- Server Certificate (client_c_server.crt)
-- Certificate chain (up to Client C Root CA)
-
-```
-
-Step 3: Certificate Request 
-
-```text
-Client C → Client B: Certificate Request
-- List of acceptable CAs (Client C's CA)
-- Certificate types accepted
-
-```
-
-Step 4: Client Certificate + Key Exchange
-
-```text
-Client B → Client C:
-- Client Certificate (client_b_signed_by_client_c.crt)
-- Client Key Exchange
-- Certificate Verify (proves possession of private key)
-```
-
-Step 5: Finished Messages
-
-```text
-Both parties exchange "Finished" messages
-- Mutual authentication completed
-- Secure channel established
+    Note over Client_B,Client_C: Secure encrypted channel established after verification
 ```
 
 ## Concept
