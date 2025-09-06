@@ -29,6 +29,8 @@ These will be the following steps :
 
 ### STEP 1: Generate CA Root Certificate for Client C
 
+<br>
+
 ### {.tabset}
 
 #### Commands
@@ -61,6 +63,8 @@ openssl x509 -in certs/client_c_root_ca.crt -text -noout
 
 
 ### STEP 2: Generate CA Root Certificate for Client B
+
+<br>
 
 ### {.tabset}
 
