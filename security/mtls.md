@@ -199,7 +199,7 @@ Client B creates a certificate signing request to be signed by Client C :
 mkdir -p client_b_cert
 
 # Generate Client B's private key for the client certificate
-openssl genrsa -out client_b_cert/client_b.key 2048
+openssl genrsa -aes256 -out client_b_cert/client_b.key 2048
 
 # Generate CSR from Client B for Client C to sign
 openssl req -new -key client_b_cert/client_b.key \
@@ -284,7 +284,7 @@ Client C needs its own server certificate for the mTLS connection :
 cd client_c_ca
 
 # Generate server private key for Client C
-openssl genrsa -out private/client_c_server.key 2048
+openssl genrsa -aes256 -out private/client_c_server.key 2048
 
 # Create server CSR for Client C
 openssl req -new -key private/client_c_server.key \
