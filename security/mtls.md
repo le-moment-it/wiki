@@ -182,3 +182,44 @@ openssl x509 -in certs/client_b_intermediate_ca.crt -text -noout | grep -A2 "Iss
 #### Results
 
 ![Step4](/assets/security/step4.png =100%x)
+
+
+### Generate CSR from Client B to Client C
+
+### {.tabset}
+
+#### Commands
+
+Client B creates a certificate signing request to be signed by Client C :
+
+```bash
+# Create directory for client certificates
+mkdir -p client_b_cert
+
+# Generate Client B's private key for the client certificate
+openssl genrsa -out client_b_cert/client_b.key 2048
+
+# Generate CSR from Client B for Client C to sign
+openssl req -new -key client_b_cert/client_b.key \
+    -out client_b_cert/client_b_to_client_c.csr \
+    -subj "/C=FR/ST=Iles-De-France/L=Paris/O=Client B Organization/OU=Client Services/CN=client-b.local"
+
+# Transfer the CSR to Client C (simulate file transfer)
+cp client_b_cert/client_b_to_client_c.csr ../client_c_ca/csr/
+
+```
+
+Verification commands :
+
+```bash
+# Verify CSR content
+openssl req -in client_b_cert/client_b_to_client_c.csr -text -noout
+
+# Verify CSR signature
+openssl req -in client_b_cert/client_b_to_client_c.csr -verify -noout
+
+```
+
+#### Results
+
+![Step5](/assets/security/step5.png =100%x)
