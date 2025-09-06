@@ -64,6 +64,8 @@ openssl x509 -in certs/client_c_root_ca.crt -text -noout
 
 ### {.tabset}
 
+#### Commands
+
 ```bash
 # Create directory structure for Client B CA
 mkdir -p client_b_ca/{certs,private,csr}
@@ -223,3 +225,49 @@ openssl req -in client_b_cert/client_b_to_client_c.csr -verify -noout
 #### Results
 
 ![Step5](/assets/security/step5.png =100%x)
+
+
+### Client C Signs the CSR and Returns the Certificate
+
+### {.tabset}
+
+#### Commands
+
+Client C uses its intermediate certificate to sign Client B's CSR:
+
+```bash
+cd client_c_ca
+
+# Create client certificate signed by Client C's intermediate CA
+openssl x509 -req -in csr/client_b_to_client_c.csr \
+    -CA certs/client_c_intermediate_ca.crt \
+    -CAkey private/client_c_intermediate_ca.key \
+    -CAcreateserial \
+    -out certs/client_b_signed_by_client_c.crt \
+    -days 365 -sha256 \
+    -extensions v3_client \
+    -extfile <(echo -e "[v3_client]\nsubjectKeyIdentifier = hash\nauthorityKeyIdentifier = keyid,issuer\nbasicConstraints = CA:FALSE\nkeyUsage = critical, nonRepudiation, digitalSignature, keyEncipherment\nextendedKeyUsage = clientAuth")
+
+# Transfer the signed certificate back to Client B (simulate file transfer)
+cp certs/client_b_signed_by_client_c.crt ../client_b_cert/
+
+# Create certificate chain file for Client B
+cat certs/client_c_intermediate_ca.crt certs/client_c_root_ca.crt > certs/client_c_ca_chain.crt
+cp certs/client_c_ca_chain.crt ../client_b_cert/
+
+```
+
+Verification commands :
+
+```
+# Verify the signed certificate
+openssl x509 -in certs/client_b_signed_by_client_c.crt -text -noout
+
+# Verify certificate chain
+openssl verify -CAfile certs/client_c_root_ca.crt -untrusted certs/client_c_intermediate_ca.crt certs/client_b_signed_by_client_c.crt
+
+```
+
+#### Results
+
+![Step6](/assets/security/step6.png =100%x)
