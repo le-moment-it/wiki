@@ -27,7 +27,7 @@ These will be the following steps :
 
 ## Step to step workshop
 
-### Generate CA Root Certificate for Client C {.tabset}
+### Generate CA Root Certificate for Client C
 ### {.tabset}
 #### Commands
 
@@ -57,7 +57,7 @@ openssl x509 -in certs/client_c_root_ca.crt -text -noout
 
 ![Step1](/assets/security/step1.jpg =100%x)
 
-### Generate CA Root Certificate for Client B {.tabset}
+### Generate CA Root Certificate for Client B
 ### {.tabset}
 
 ```bash
