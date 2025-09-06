@@ -393,11 +393,11 @@ sequenceDiagram
     Client_B->>Client_C: Client Hello (supported cipher suites, TLS version)
     Client_C->>Client_B: Server Hello (chosen cipher suite)
     Client_C->>Client_B: Send Server Certificate
-    Note over Client_C,Client_B: Certificate: client_c_server.crt\nPrivate Key: private/client_c_server.key\nChain: client_c_intermediate_ca.crt + client_c_root_ca.crt
+    Note over Client_C,Client_B: Certificate : client_c_server.crt + Chain
 
     Client_C->>Client_B: Request Client Certificate
     Client_B->>Client_C: Send Client Certificate
-    Note over Client_B,Client_C: Certificate: client_b_signed_by_client_c.crt\nPrivate Key: client_b.key\nChain: client_c_intermediate_ca.crt + client_c_root_ca.crt
+    Note over Client_B,Client_C: Certificate: client_b_signed_by_client_c.crt + Chain
 
     Client_B->>Client_C: Client Key Exchange
     Note over Client_B,Client_C: Proves possession of private key (client_b.key)
