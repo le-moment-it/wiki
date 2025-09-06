@@ -392,15 +392,24 @@ sequenceDiagram
 
     Client_B->>Client_C: Client Hello (supported cipher suites, TLS version)
     Client_C->>Client_B: Server Hello (chosen cipher suite)
-    Client_C->>Client_B: Send Server Certificate\n(cert: client_c_server.crt, key: private/client_c_server.key)\nIncludes chain: client_c_intermediate_ca.crt + client_c_root_ca.crt
+    Client_C->>Client_B: Send Server Certificate
+    Note over Client_C,Client_B: Certificate: client_c_server.crt\nPrivate Key: private/client_c_server.key\nChain: client_c_intermediate_ca.crt + client_c_root_ca.crt
+
     Client_C->>Client_B: Request Client Certificate
-    Client_B->>Client_C: Send Client Certificate\n(cert: client_b_signed_by_client_c.crt, key: client_b.key)\nIncludes chain: client_c_intermediate_ca.crt + client_c_root_ca.crt
-    Client_B->>Client_C: Client Key Exchange\n(proves possession of private key: client_b.key)
-    Client_B->>Client_C: Certificate Verify\n(verifies client cert validity signed by Client C's CA)
+    Client_B->>Client_C: Send Client Certificate
+    Note over Client_B,Client_C: Certificate: client_b_signed_by_client_c.crt\nPrivate Key: client_b.key\nChain: client_c_intermediate_ca.crt + client_c_root_ca.crt
+
+    Client_B->>Client_C: Client Key Exchange
+    Note over Client_B,Client_C: Proves possession of private key (client_b.key)
+
+    Client_B->>Client_C: Certificate Verify
+    Note over Client_C: Validate client cert signed by Client C's CA
+
     Client_C->>Client_B: Server Finished
     Client_B->>Client_C: Client Finished
 
     Note over Client_B,Client_C: Secure encrypted channel established after verification
+
 ```
 
 ## Concept
