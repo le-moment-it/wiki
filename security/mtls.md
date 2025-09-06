@@ -310,6 +310,10 @@ openssl x509 -req -in csr/client_c_server.csr \
 
 ### STEP 8: Connections tests
 
+### {.tabset}
+
+#### Commands
+
 Start Client C as mTLS Server:
 
 ```bash
@@ -339,6 +343,10 @@ openssl s_client -connect localhost:8443 \
     -state
 
 ```
+
+#### Schema
+
+![Step8](/assets/security/step8.png =100%x)
 
 ## Verifications commands
 
