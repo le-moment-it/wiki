@@ -28,7 +28,7 @@ These will be the following steps :
 ## Step to step workshop
 
 ### Generate CA Root Certificate for Client C {.tabset}
-
+### {.tabset}
 #### Commands
 
 First, create the directory structure and generate Client C's root CA:
