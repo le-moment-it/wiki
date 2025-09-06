@@ -432,17 +432,17 @@ Both parties exchange "Finished" messages
 ## Concept
 Client B and Client C trust each other in a mutual TLS (mTLS) connection because both parties authenticate each other using digital certificates issued by trusted Certificate Authorities (CAs). Here's why and how this trust is established:
 
-Certificate Exchange and Verification
-During the mTLS handshake, Client C (the server) presents its server certificate to Client B (the client). Client B verifies this certificate against a list of trusted CAs it has. This confirms that Client C is who it claims to be and that its certificate is valid and trusted.
+  1. Certificate Exchange and Verification
+    During the mTLS handshake, Client C (the server) presents its server certificate to Client B (the client). Client B verifies this certificate against a list of trusted CAs it has. This confirms that Client C is who it claims to be and that its certificate is valid and trusted.
 
-Client Certificate and Proof of Possession
-Similarly, Client B presents its client certificate to Client C. Client C verifies this certificate against its trusted CA list to confirm Client B’s identity. Client B also proves possession of the private key corresponding to the certificate, ensuring the certificate is not being impersonated.
+  2. Client Certificate and Proof of Possession
+    Similarly, Client B presents its client certificate to Client C. Client C verifies this certificate against its trusted CA list to confirm Client B’s identity. Client B also proves possession of the private key corresponding to the certificate, ensuring the certificate is not being impersonated.
 
-Trusted Certificate Authorities (CAs)
-Both Client B and Client C trust the same or cross-recognized Certificate Authorities that issue the certificates. Because the certificates are signed by these trusted CAs, each party can rely on the authenticity of the other's certificate.
+  3. Trusted Certificate Authorities (CAs)
+    Both Client B and Client C **trust the same or cross-recognized Certificate Authorities that issue the certificates**. Because the certificates are signed by these trusted CAs, each party can rely on the authenticity of the other's certificate.
 
-Mutual Authentication Process
-The mutual certificate verification combined with proof of private key possession creates a strong trust relationship—each party has cryptographic proof of the other's identity before secure communication happens.
+  4. Mutual Authentication Process
+    The mutual certificate verification combined with proof of private key possession creates a strong trust relationship—each party has cryptographic proof of the other's identity before secure communication happens.
 
-Secure Encrypted Channel Established
-Once both sides verify certificates successfully, an encrypted and authenticated TLS connection is established, ensuring confidentiality, integrity, and authenticity of the communication.
+  5. Secure Encrypted Channel Established
+    Once both sides verify certificates successfully, an encrypted and authenticated TLS connection is established, ensuring confidentiality, integrity, and authenticity of the communication.
