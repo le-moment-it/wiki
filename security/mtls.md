@@ -27,6 +27,8 @@ These will be the following steps :
 
 ## Step to step workshop
 
+<br>
+
 ### STEP 1: Generate CA Root Certificate for Client C
 
 <br>
@@ -61,6 +63,7 @@ openssl x509 -in certs/client_c_root_ca.crt -text -noout
 
 ![Step1](/assets/security/step1.png =100%x)
 
+<br>
 
 ### STEP 2: Generate CA Root Certificate for Client B
 
@@ -95,7 +98,11 @@ openssl x509 -in certs/client_b_root_ca.crt -text -noout
 
 ![Step2](/assets/security/step2.png =100%x)
 
+<br>
+
 ### STEP 3: Generate Intermediate CA Certificate for Client C (optional)
+
+<br>
 
 ### {.tabset}
 
@@ -141,8 +148,11 @@ openssl x509 -in certs/client_c_intermediate_ca.crt -text -noout | grep -A2 "Iss
 
 ![Step3](/assets/security/step3.png =100%x)
 
+<br>
 
 ### STEP 4: Generate Intermediate CA Certificate for Client B (optional)
+
+<br>
 
 ### {.tabset}
 
@@ -189,8 +199,11 @@ openssl x509 -in certs/client_b_intermediate_ca.crt -text -noout | grep -A2 "Iss
 
 ![Step4](/assets/security/step4.png =100%x)
 
+<br>
 
 ### STEP 5: Generate CSR from Client B to Client C
+
+<br>
 
 ### {.tabset}
 
@@ -230,8 +243,11 @@ openssl req -in client_b_cert/client_b_to_client_c.csr -verify -noout
 
 ![Step5](/assets/security/step5.png =100%x)
 
+<br>
 
 ### STEP 6: Client C Signs the CSR and Returns the Certificate
+
+<br>
 
 ### {.tabset}
 
@@ -276,7 +292,11 @@ openssl verify -CAfile certs/client_c_root_ca.crt -untrusted certs/client_c_inte
 
 ![Step6](/assets/security/step6.png =100%x)
 
+<br>
+
 ### STEP 7: Create Server Certificate for Client C
+
+<br>
 
 ### {.tabset}
 
@@ -311,8 +331,11 @@ openssl x509 -req -in csr/client_c_server.csr \
 
 ![Step7](/assets/security/step7.png =100%x)
 
+<br>
 
 ### STEP 8: Connections tests
+
+<br>
 
 ### {.tabset}
 
