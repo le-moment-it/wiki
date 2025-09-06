@@ -306,3 +306,143 @@ openssl x509 -req -in csr/client_c_server.csr \
 #### Result
 
 ![Step7](/assets/security/step7.png =100%x)
+
+
+### STEP 8: Connections tests
+
+Start Client C as mTLS Server:
+
+```bash
+cd client_c_ca
+
+# Start OpenSSL s_server with mutual TLS verification
+openssl s_server -accept 8443 \
+    -cert certs/client_c_server.crt \
+    -key private/client_c_server.key \
+    -CAfile certs/client_c_ca_chain.crt \
+    -Verify 2 \
+    -state
+
+```
+
+Test from Client B:
+
+```bash
+cd client_b_cert
+
+# Test connection from Client B to Client C using mTLS
+openssl s_client -connect localhost:8443 \
+    -cert client_b_signed_by_client_c.crt \
+    -key client_b.key \
+    -CAfile client_c_ca_chain.crt \
+    -Verify 2 \
+    -state
+
+```
+
+## Verifications commands
+
+Certificate and Key Matching Verification :
+
+```bash
+# Verify private key matches certificate (should show same hash)
+openssl rsa -noout -modulus -in client_b_cert/client_b.key | openssl sha256
+openssl x509 -noout -modulus -in client_b_cert/client_b_signed_by_client_c.crt | openssl sha256
+
+# Verify CSR matches private key
+openssl req -noout -modulus -in client_b_cert/client_b_to_client_c.csr | openssl sha256
+
+```
+
+Certificate Chain Verification:
+
+```bash
+# Verify complete certificate chain
+openssl verify -show_chain -CAfile client_c_ca/certs/client_c_root_ca.crt \
+    -untrusted client_c_ca/certs/client_c_intermediate_ca.crt \
+    client_b_cert/client_b_signed_by_client_c.crt
+
+# Check certificate validity periods
+openssl x509 -in client_b_cert/client_b_signed_by_client_c.crt -noout -dates
+
+```
+
+Connection Testing Commands:
+
+```bash
+# Test TLS connection without client certificate (should fail with mTLS server)
+openssl s_client -connect localhost:8443 -CAfile client_b_cert/client_c_ca_chain.crt
+
+# Test with wrong client certificate (should fail)
+openssl s_client -connect localhost:8443 \
+    -cert client_b_ca/certs/client_b_root_ca.crt \
+    -key client_b_ca/private/client_b_root_ca.key \
+    -CAfile client_b_cert/client_c_ca_chain.crt
+
+```
+
+## mTLS Handshake Process
+
+Step 1 : Client Hello
+
+```text
+Client B → Client C: TLS Client Hello
+- Supported cipher suites
+- TLS version
+- Random number
+
+```
+
+Step 2: Server Hello + Server Certificate
+
+```text
+Client C → Client B: 
+- Server Hello (cipher suite selection)
+- Server Certificate (client_c_server.crt)
+- Certificate chain (up to Client C Root CA)
+
+```
+
+Step 3: Certificate Request 
+
+```text
+Client C → Client B: Certificate Request
+- List of acceptable CAs (Client C's CA)
+- Certificate types accepted
+
+```
+
+Step 4: Client Certificate + Key Exchange
+
+```text
+Client B → Client C:
+- Client Certificate (client_b_signed_by_client_c.crt)
+- Client Key Exchange
+- Certificate Verify (proves possession of private key)
+```
+
+Step 5: Finished Messages
+
+```text
+Both parties exchange "Finished" messages
+- Mutual authentication completed
+- Secure channel established
+```
+
+## Concept
+Client B and Client C trust each other in a mutual TLS (mTLS) connection because both parties authenticate each other using digital certificates issued by trusted Certificate Authorities (CAs). Here's why and how this trust is established:
+
+Certificate Exchange and Verification
+During the mTLS handshake, Client C (the server) presents its server certificate to Client B (the client). Client B verifies this certificate against a list of trusted CAs it has. This confirms that Client C is who it claims to be and that its certificate is valid and trusted.
+
+Client Certificate and Proof of Possession
+Similarly, Client B presents its client certificate to Client C. Client C verifies this certificate against its trusted CA list to confirm Client B’s identity. Client B also proves possession of the private key corresponding to the certificate, ensuring the certificate is not being impersonated.
+
+Trusted Certificate Authorities (CAs)
+Both Client B and Client C trust the same or cross-recognized Certificate Authorities that issue the certificates. Because the certificates are signed by these trusted CAs, each party can rely on the authenticity of the other's certificate.
+
+Mutual Authentication Process
+The mutual certificate verification combined with proof of private key possession creates a strong trust relationship—each party has cryptographic proof of the other's identity before secure communication happens.
+
+Secure Encrypted Channel Established
+Once both sides verify certificates successfully, an encrypted and authenticated TLS connection is established, ensuring confidentiality, integrity, and authenticity of the communication.
