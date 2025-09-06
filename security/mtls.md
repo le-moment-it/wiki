@@ -27,7 +27,7 @@ These will be the following steps :
 
 ## Step to step workshop
 
-### Generate CA Root Certificate for Client C
+### STEP 1: Generate CA Root Certificate for Client C
 
 ### {.tabset}
 
@@ -60,7 +60,7 @@ openssl x509 -in certs/client_c_root_ca.crt -text -noout
 ![Step1](/assets/security/step1.jpg =100%x)
 
 
-### Generate CA Root Certificate for Client B
+### STEP 2: Generate CA Root Certificate for Client B
 
 ### {.tabset}
 
@@ -91,7 +91,7 @@ openssl x509 -in certs/client_b_root_ca.crt -text -noout
 
 ![Step2](/assets/security/step2.png =100%x)
 
-### Generate Intermediate CA Certificate for Client C (optional)
+### STEP 3: Generate Intermediate CA Certificate for Client C (optional)
 
 ### {.tabset}
 
@@ -138,7 +138,7 @@ openssl x509 -in certs/client_c_intermediate_ca.crt -text -noout | grep -A2 "Iss
 ![Step3](/assets/security/step3.png =100%x)
 
 
-### Generate Intermediate CA Certificate for Client B (optional)
+### STEP 4: Generate Intermediate CA Certificate for Client B (optional)
 
 ### {.tabset}
 
@@ -186,7 +186,7 @@ openssl x509 -in certs/client_b_intermediate_ca.crt -text -noout | grep -A2 "Iss
 ![Step4](/assets/security/step4.png =100%x)
 
 
-### Generate CSR from Client B to Client C
+### STEP 5: Generate CSR from Client B to Client C
 
 ### {.tabset}
 
@@ -227,7 +227,7 @@ openssl req -in client_b_cert/client_b_to_client_c.csr -verify -noout
 ![Step5](/assets/security/step5.png =100%x)
 
 
-### Client C Signs the CSR and Returns the Certificate
+### STEP 6: Client C Signs the CSR and Returns the Certificate
 
 ### {.tabset}
 
