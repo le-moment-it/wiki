@@ -1,69 +1,72 @@
 ---
 title: Atmos
-description:  A Modern Composable Framework YAML based
+description: A Modern Composable YAML-Based Framework
 published: true
 ---
 
 # Information
-| Project | Version | Date |
-|-----------|-----------|-----------|
-| [atmos](https://atmos.tools/)   | 1.187.0 | 2025-08-26  |
 
-> In this article, I will give share my opinion and experience regarding how a Terraform/OpenTofu should be maintained and why a tool is good or not. If you don't agree with my point of view, feel free to reach out so we can discuss and share our opinions and experiences about these tools we love to use ♥️
+| Project | Version | Date |
+| :-- | :-- | :-- |
+| [atmos](https://atmos.tools/) | 1.187.0 | 2025-08-26 |
+
+> In this article, I will share my opinion and experience regarding how Terraform/OpenTofu infrastructure should be maintained and evaluate what makes a wrapper tool effective. If you disagree with my perspective, feel free to reach out so we can discuss and share our opinions and experiences about these tools we love to use ♥️
 {.is-warning}
 
 # Context
-Terraform (& OpenTofu) are ,by far, became the standard to deploy infrastructure in the cloud. I personnaly use Terraform since 2019 and I accumulated a lot of experience using these tools. I quickly understood that Terraform would become easier to maintain and scale if I could wrap it with another tool to keep the infrastructure DRY (Don't Repeat Yourself).
 
-The first most popular tool at the time was [Terragrunt](https://terragrunt.gruntwork.io/). However, after many tests, I often came to the conclusion that `Terragrunt` was very tedious to use and maintain. It requires you to create too many files in a lot of different folders without answering the main purpose of the tool : Keep the infrastructure DRY.
+Terraform (\& OpenTofu) have, by far, become the standard for deploying cloud infrastructure. I have personally used Terraform since 2019 and have accumulated substantial experience with these tools. I quickly understood that Terraform would become easier to maintain and scale if I could wrap it with another tool to keep the infrastructure DRY (Don't Repeat Yourself).
 
-In 2021, I've discovered [Terraspace](https://terraspace.cloud/), and I immediately found that this tool promising. I will describe why in the next section : [Wrapper requirements](#wrapper-requirements).
+The first popular tool at the time was [Terragrunt](https://terragrunt.gruntwork.io/). However, after extensive testing, I frequently concluded that `Terragrunt` was very tedious to use and maintain. It requires creating too many files across numerous folders without adequately addressing the tool's main purpose: keeping infrastructure DRY.
 
-However, in 2025, I have more and more doubt regarding if `Terraspace` will be maintained in the long term. More and more Github `issues` requires updates that developers from `boltops` company cannot provide due to business priorities.
+In 2021, I discovered [Terraspace](https://terraspace.cloud/), and I immediately found this tool promising. I will explain why in the next section: [Wrapper requirements](#wrapper-requirements).
 
-That's why, even if I work a lot with `Terraspace` , I need now to check which tools are available on the market to manage Terraform code efficiently. Among all solutions, I've retained the following ones :
+However, in 2025, I have increasing doubts about whether `Terraspace` will be maintained long-term. More and more GitHub `issues` require updates that developers from the `boltops` company cannot provide due to business priorities.
 
-- [Atmos](https://atmos.tools/) : A modern composable framework for tools such as Terraform, OpenTofu, Packer and Helmfile. It is the tool that I will present in this article.
-- [Terramate](https://terramate.io/docs/): Another tool to deploy and manage Terraform code based
-- [Terragrunt](https://terragrunt.gruntwork.io/) : The Terraform historical wrapper. Even if I already tested this solution many times, I plan to test it again because the `Gruntwork` team implemented some very interesting features explained here : [Road to Terragrunt 1.0](https://www.gruntwork.io/blog/the-road-to-terragrunt-1-0-stacks)
+That's why, even though I work extensively with `Terraspace`, I now need to evaluate which tools are available on the market to manage Terraform code efficiently. Among all solutions, I've retained the following ones:
 
-
-
-# Wrapper requirements
-
-> What makes a tool a **good wrapper** to Terraform or OpenTofu ?
-
-**That's the eternal question**. I could (and will) write an entire article about how to manage **Infrastructure As Code** repositories. However, I will try to remain concede in this part and only focus on Terraform/OpenTofu related repositories.
+- [Atmos](https://atmos.tools/): A modern composable framework for tools such as Terraform, OpenTofu, Packer, and Helmfile. This is the tool I will present in this article.
+- [Terramate](https://terramate.io/docs/): Another tool for deploying and managing Terraform code
+- [Terragrunt](https://terragrunt.gruntwork.io/): The historical Terraform wrapper. Even though I've already tested this solution multiple times, I plan to test it again because the `Gruntwork` team has implemented some very interesting features explained here: [Road to Terragrunt 1.0](https://www.gruntwork.io/blog/the-road-to-terragrunt-1-0-stacks)
 
 
-## Must be `stack` focused
+# Wrapper Requirements
 
-Compared to other programmatical languages, HCL (Terraform language) is pretty easy to learn and to read. However, when we start to create bigger infrastructure, the number of code line increases significaly and it becomes harder to maintain. That's why we created Terraform module, reusable piece of code, a simple call to a module could deploy multiple resources. But, if we take a look to one of the most popular module [AWS VPC Terraform VPC](https://registry.terraform.io/modules/terraform-aws-modules/vpc/aws/latest), we can see that implementing this module, and adding other modules on top of it can be tedious to maintain if we need to deploy multiple environments, in multiple region for multiple teams etc ....
+> What makes a tool a **good wrapper** for Terraform or OpenTofu?
 
-Even if I never read an article about it, a **need of `stack` abstraction had appeared**.
+**That's the eternal question**. I could (and will) write an entire article about managing **Infrastructure as Code** repositories. However, I will try to remain concise in this section and focus only on Terraform/OpenTofu-related repositories.
 
-A `stack` is a group of one or multiple **`indivisible`** piece of infrastructure that attend to work together. From now on, I will call these pieces **`components`**.
+## Must Be `Stack` Focused
 
-For example, if I wanted to create a `stack` to deploy a new `instance`, maybe this `stack` would be a combination of the following `components` :
+Compared to other programming languages, HCL (Terraform language) is relatively easy to learn and read. However, when we start creating larger infrastructure, the number of code lines increases significantly, and it becomes harder to maintain. That's why we created Terraform modules—reusable pieces of code where a simple module call can deploy multiple resources. But if we look at one of the most popular modules, [AWS VPC Terraform Module](https://registry.terraform.io/modules/terraform-aws-modules/vpc/aws/latest), we can see that implementing this module and adding other modules on top of it can become tedious to maintain when we need to deploy multiple environments, in multiple regions for multiple teams, etc.
 
-- [network](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/network) : Network where the instance will be deployed
-- [subnet](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/network_subnet) : Definition of the `subnets` inside the `network`
-- [instance](https://registry.terraform.io/modules/terraform-hetzner-modules/server/hetzner/latest) : `Instance` the actual instance
+Even though I've never read an article about it, a **need for `stack` abstraction has emerged**.
 
-More and more , all infrastructure as code tools tends to focus be more `stack` focus. Among many examples, we can find : 👇
+A `stack` is a group of one or multiple **`indivisible`** pieces of infrastructure that are intended to work together. From now on, I will call these pieces **`components`**.
 
-### Stack examples {.tabset}
+For example, if I wanted to create a `stack` to deploy a new `instance`, this `stack` might be a combination of the following `components`:
+
+- [network](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/network): Network where the instance will be deployed
+- [subnet](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/network_subnet): Definition of the `subnets` inside the `network`
+- [instance](https://registry.terraform.io/modules/terraform-hetzner-modules/server/hetzner/latest): The actual instance
+
+Increasingly, all Infrastructure as Code tools tend to become more `stack`-focused. Among many examples, we can find: 👇
+
+### Stack Examples {.tabset}
+
 #### Atmos
-In `Atmos`, a `component` is named **component** or **Terraform "root" module**. It is an independent piece of terraform code where we will define what our component will deploy. An example can be :
 
-```
+In `Atmos`, a `component` is called a **component** or **Terraform "root" module**. It is an independent piece of Terraform code where we define what our component will deploy. An example can be:
+
+```hcl
 resource "hcloud_network" "this" {
   name     = "network-${var.environment}"
   ip_range = var.ip_range
 }
 ```
 
-Then a `stack` will be a **collection** of `components` defined in a **yaml file**. In this example , two components `network` & `instance` are deployed in the stack :
+Then a `stack` will be a **collection** of `components` defined in a **YAML file**. In this example, two components `network` \& `instance` are deployed in the stack:
+
 ```yaml
 components:
   terraform:
@@ -75,29 +78,31 @@ components:
         component: instance
 ```
 
-**More details about stacks in the next parts of this documentation 🧑‍💻** 
+**More details about stacks in the next sections of this documentation 🧑‍💻**
 
 #### Terraspace
 
 In Terraspace, a `stack` is called a `stack`. It allows you to define a piece of Terraform code that can be deployed separately from other stacks. Moreover, you can define dependencies between stacks to deploy them in the correct order if needed. This is an example of stack definition:
 
-```
+```bash
 $ terraspace new stack demo
 => Creating new stack called demo.
       create  app/stacks/demo
       create  app/stacks/demo/main.tf
       create  app/stacks/demo/outputs.tf
       create  app/stacks/demo/variables.tf
-You can use `terraspace new module` to create the a starter module structure. Example:
+You can use 'terraspace new module' to create a starter module structure.
 ```
+
 
 #### Terramate
 
-> I didn't have the chance yet to give `Terramate` a try.
+> I haven't had the opportunity to try `Terramate` yet.
 {.is-warning}
 
 In Terramate, a `stack` is called a `stack`. It allows you to define a piece of Terraform code that can be deployed separately from other stacks. Moreover, you can define dependencies between stacks to deploy them in the correct order if needed. This is an example of stack definition:
-```
+
+```hcl
 # ./stacks/vpc/stack.tm.hcl
 stack {
   name        = "Main VPC"
@@ -106,58 +111,53 @@ stack {
 }
 ```
 
+
 #### Terragrunt
 
-> I didn't have the chance yet to test `Terragrunt` `units` & `stacks`.
+> I haven't had the chance to test `Terragrunt` `units` \& `stacks` yet.
 {.is-warning}
 
-In its Road to [Terragrunt 1.0](https://www.gruntwork.io/blog/the-road-to-terragrunt-1-0-stacks), [Terragrunt](https://terragrunt.gruntwork.io/) announced the two importants new features :
+In its [Road to Terragrunt 1.0](https://www.gruntwork.io/blog/the-road-to-terragrunt-1-0-stacks), [Terragrunt](https://terragrunt.gruntwork.io/) announced two important new features:
 
-- `units` : Abstraction layer on a top of a module instanciation. It forces you to define inputs to the modules and extract outputs.
+- `units`: Abstraction layer on top of module instantiation. It forces you to define inputs to modules and extract outputs.
+- `stacks`: Construct for provisioning one or more `units`. Within the same `stack`, `units` can pass data to each other and be provisioned and de-provisioned in proper order.
 
-- `stacks`: Construct for provisioning one or more `units`. Within the same `stack` , `units` can pas data to each other and be provisioned and de-provisioned in proper order.
-
-```
+```hcl
 # live/example-stack/terragrunt.stack.hcl
 unit "first_null" {
   source = "${get_repo_root()}/units/null-with-message"
   path   = "first-null"
 }
-
 unit "second_null" {
   source = "${get_repo_root()}/units/null-with-message"
   path   = "second-null"
 }
 ```
 
+
 #### Terraform (BETA)
-[Terraform](https://developer.hashicorp.com/terraform) itself introduced a stack system where you can define multiple `components` within a `stack` :
 
-```
+[Terraform](https://developer.hashicorp.com/terraform) itself has introduced a stack system where you can define multiple `components` within a `stack`:
+
+```hcl
 # components.tfstack.hcl
-
 component "s3" {
     for_each = var.regions
-
     source = "./s3"
-
     inputs = {
         region = each.value
     }
-
     providers = {
         aws    = provider.aws.configurations[each.value]
         random = provider.random.this
     }
 }
-
 ```
 
-Then an instanciation of this stack is defined by a `deployment` :
+Then an instantiation of this stack is defined by a `deployment`:
 
-```
+```hcl
 # deployments.tfdeploy.hcl
-
 deployment "production" {
     inputs = {
         aws_region     = "us-west-1"
@@ -166,83 +166,89 @@ deployment "production" {
 }
 ```
 
-### Stacks requirements
+
+### Stack Requirements
 
 Stacks are an abstraction layer built on top of components, which themselves are often abstractions over Terraform modules.
+
 To ensure these abstraction layers remain efficient, they need to be **environment-agnostic**. This means your stacks must be deployable regardless of the environment (`prod`, `staging`, etc.) as well as other variable values that define the deployment context (for example: region, location, size, etc.).
 
-#### Stacks {.tabset}
-##### Agnostics
+#### Stack Examples {.tabset}
 
-This is an example of an **environment-agnosti** network :
+##### Environment-Agnostic
 
-```
+This is an example of an **environment-agnostic** network:
+
+```hcl
 resource "hcloud_network" "this" {
   name     = "network-${var.environment}"
   ip_range = var.ip_range
 }
 ```
 
-##### None Agnostics
 
-This is an example of an **none environment-agnosti** network :
+##### Non-Environment-Agnostic
 
-```
+This is an example of a **non-environment-agnostic** network:
+
+```hcl
 resource "hcloud_network" "this" {
   name     = "mynetwork"
   ip_range = var.ip_range
 }
 ```
 
-## Must be `mono-repository` capable
 
-Another question we often see on internet is how should I organise my Terraform repositories. Should I create separate repositories per services, per department or keep everyting in the same. Obviously, there is not good answer to this question but this is my opinion on the topic.
+## Must Be `Mono-Repository` Capable
 
-**A single repository** (or maybe 2 according to your organisation) **per department** should be enough to manage the deployment of the infrastructure managed by this same department.
-Too many repositories often leads to too many actions (and merge requests) to perform a single update. Moreover, when you use too many repositories, you might miss opportunities to centralise the management of you infrastructure. 
+Another question we often see on the internet is how to organize Terraform repositories. Should I create separate repositories per service, per department, or keep everything in the same repository? Obviously, there is no single correct answer to this question, but here is my opinion on the topic.
 
-That's why I highly advice using `mono-repositories`. Mono-repositories brings the best of the two world between `monolith` and `micro-services` repositories (vocabulary often use for software development). With `mono-repositories`, you will be able to centralize the management of your code (more details in [Must provide a `centralised` experience](#must-provide-a-centralised-experience)) and easily tracks changes in your infrastructure.
+**A single repository** (or maybe 2 according to your organization) **per department** should be sufficient to manage the deployment of infrastructure managed by that same department.
 
-> `Mono-repository` **does not mean** `monolith` because within the same mono-repository , you will be able to deploy multiple infrastructure that **does not depends on each other**. For example, you can use different Terraform `workspaces` or more simply different terraform state name according to your need.
+Too many repositories often lead to too many actions (and merge requests) to perform a single update. Moreover, when you use too many repositories, you might miss opportunities to centralize the management of your infrastructure.
+
+That's why I highly recommend using `mono-repositories`. Mono-repositories bring the best of both worlds between `monolith` and `micro-services` repositories (vocabulary often used for software development). With `mono-repositories`, you will be able to centralize the management of your code (more details in [Must provide a `centralized` experience](#must-provide-a-centralized-experience)) and easily track changes in your infrastructure.
+
+> `Mono-repository` **does not mean** `monolith` because within the same mono-repository, you will be able to deploy multiple infrastructure components that **do not depend on each other**. For example, you can use different Terraform `workspaces` or more simply different terraform state names according to your needs.
 {.is-success}
 
-Within you `mono-repository`, you will be able to develop your stack, **but also the instanciation of these stacks** using context variables (environment, location etc ...). Sometimes, these context variables are called : `layers`.
+Within your `mono-repository`, you will be able to develop your stacks, **but also the instantiation of these stacks** using context variables (environment, location, etc.). Sometimes, these context variables are called `layers`.
 
-Having a well though `mono-repository` structure is **crucial** and must be **highly thoughts** by your organisation before implemeting them.
-Luckily, tools such as `Atmos`, `Terragrunt` and `Terraspace`  suggest you (and sometime forces you) to follow a specific `mono-repository` structure to ensure that the tool will be able to parse correctly the configurations. However, your `mono-repository` must answer **your need** and **your practices**.
+Having a well-thought `mono-repository` structure is **crucial** and must be **carefully considered** by your organization before implementing it.
 
-## Must be `configuration as code` friendly
+Fortunately, tools such as `Atmos`, `Terragrunt`, and `Terraspace` suggest (and sometimes force) you to follow a specific `mono-repository` structure to ensure that the tool can correctly parse the configurations. However, your `mono-repository` must answer **your needs** and **your practices**.
 
-Like I mentionned in the [Must be `mono-repository` capable](#must-be-mono-repository-capable), having a `mono-repository` that fits your organisation needs is crucial. That's why having a tool enough "flexible" to answer all possible needs is important. To achieve this, the tool needs to be configurable **with code**. And of course, this code **must** be in the mono-repository where the tool will be launched. With a single read of the configuration files, you are able to understand how the `mono-repository` is working and you will be ready to use it.
+## Must Be `Configuration as Code` Friendly
 
-Having a highly configurable capability make a big difference between a good tool and a great tool. Let's see some examples :
+As I mentioned in [Must be `mono-repository` capable](#must-be-mono-repository-capable), having a `mono-repository` that fits your organization's needs is crucial. That's why having a tool flexible enough to answer all possible needs is important. To achieve this, the tool needs to be configurable **with code**. And of course, this code **must** be in the mono-repository where the tool will be launched. With a single read of the configuration files, you should be able to understand how the `mono-repository` works and be ready to use it.
 
-### Configurable tools {.tabset}
+Having highly configurable capabilities makes a big difference between a good tool and a great tool. Let's see some examples:
+
+### Configurable Tools {.tabset}
 
 #### Terraspace
 
-Terraspace `mono-repository` includes a dedicated `config` folder when you will be able to [configure various aspects](https://terraspace.cloud/docs/config/reference/) :
+Terraspace `mono-repository` includes a dedicated `config` folder where you can [configure various aspects](https://terraspace.cloud/docs/config/reference/):
 
-```perl
+```ruby
 Terraspace.configure do |config|
   config.logger.level = :info
   config.test_framework = "rspec"
 end
 ```
 
+
 #### Atmos
 
-The Atmos cli must have a `atmos.yaml` file to know how to interact with the [various tools and configuration it manages](https://atmos.tools/cli/configuration/#configuration-file-atmosyaml) :
+The Atmos CLI must have an `atmos.yaml` file to know how to interact with the [various tools and configurations it manages](https://atmos.tools/cli/configuration/#configuration-file-atmosyaml):
 
-```
+```yaml
 base_path: "./"
-
 components:
   terraform:
     command: "tofu"
     base_path: "components/terraform"
 ... 
-
 stacks:
   base_path: "stacks"
   included_paths:
@@ -251,42 +257,46 @@ stacks:
 logs:
   file: "/dev/stderr"
   level: Info
-
 ```
 
-## Must provide a `centralised` experience
 
-The last but not least important for having a great wrapper is its capacity to `centralise` actions that you can perform within the repository.
-Let's take some example from the development practices : 👇
+## Must Provide a `Centralized` Experience
 
-### Development practices {.tabset}
+The last but not least important requirement for having a great wrapper is its capacity to `centralize` actions that you can perform within the repository.
+
+Let's take some examples from development practices: 👇
+
+### Development Practices {.tabset}
 
 #### Node.js
 
-Node.js developers use their `package.json` to wrap long and tedious commands and easily call them with command such as :
+Node.js developers use their `package.json` to wrap long and tedious commands and easily call them with commands such as:
 
 ```bash
 npm run <command>
 ```
 
-A `package.json` could looks like :
+A `package.json` could look like:
 
 ```json
+{
   "scripts": {
     "test": "shell=$(basename -- $(ps -o comm= $(ps -o ppid= -p $PPID)) | sed 's/^-//'); make test-$shell",
-    "markdown-link-check": "git ls-files | command grep -E '\\.md$' | xargs -n 1 markdown-link-check -p"
-  },
+    "markdown-link-check": "git ls-files | command grep -E '\.md$' | xargs -n 1 markdown-link-check -p"
+  }
+}
 ```
+
 
 #### PHP Composer
 
-Composer developers use their `composer.json` to wrap long and tedious commands and easily call them with command such as : 
+Composer developers use their `composer.json` to wrap long and tedious commands and easily call them with commands such as:
 
 ```bash
 composer run-script
 ```
 
-A `composer.json` could looks like :
+A `composer.json` could look like:
 
 ```json
 {
@@ -296,39 +306,37 @@ A `composer.json` could looks like :
 }
 ```
 
-###
+As a DevOps engineer, when I choose the tool that I will interact with during my entire development experience, I want the exact same seamless experience that developers have when they develop their applications.
 
-As a DevOps , when I choose the tool that I will interact with during all my development experience, I want the exact seamless experience as the deveopers have when they develop their applications.
+That's why I want to interact with a **single CLI** that will automatically perform actions according to the arguments I provide to it. This single CLI will bring the `centralized` experience that I am looking for.
 
-That's why I want to interact with a **single cli** that will automatically perform actions according to arguments I will provide to it. This single cli will bring this `centralised` experience that I am looking for.
-
-Finally, having, this single cli interaction will slighly help to develop and debug the CI/CD that will then perform actions for you after each of your commit or merge requests merged.
+Finally, having this single CLI interaction will slightly help develop and debug the CI/CD that will then perform actions for you after each of your commits or merged merge requests.
 
 # Atmos
 
-After defined what makes a great Terraform wrapper in the previous part, let's dig into [Atmos](https://atmos.tools/).
+After defining what makes a great Terraform wrapper in the previous section, let's dive into [Atmos](https://atmos.tools/).
 
-## Stacks & Components
+## Stacks \& Components
 
-According to its documentation, Atmos is a "cloud architecture framework for native Terraform". It provides a simple way to build `components` and `stacks` that you can deploy to build your infrastructure :
+According to its documentation, Atmos is a "cloud architecture framework for native Terraform". It provides a simple way to build `components` and `stacks` that you can deploy to build your infrastructure:
 
-- `components` : Also called `Terraform "root" module`, this is the "real" code that will be deployed by Terraform.
-- `stacks` : **YAML** definition of `components` to deploy.
+- `components`: Also called `Terraform "root" modules`, this is the "actual" code that will be deployed by Terraform.
+- `stacks`: **YAML** definition of `components` to deploy.
 
-> I am not gonna lie when I will say that I wasn't sceptical when I first see YAML code to instanciate Terraform modules. But at the end of the day, using the HCL configuration language or YAML is the same :
+> I won't lie when I say that I was skeptical when I first saw YAML code to instantiate Terraform modules. But at the end of the day, using the HCL configuration language or YAML achieves the same result:
 
 ### Example {.tabset}
 
 #### HCL
 
-```
+```hcl
 module "vpc" {
   source = "./vpc"
-
   name = "my-vpc"
   cidr = "10.0.0.0/16"
 }
 ```
+
 
 #### YAML - Atmos
 
@@ -339,14 +347,14 @@ module "vpc" {
       vars:
         name: "my-vpc"
         cidr: "10.0.0.0/16"
-
 ```
 
-### Components dependencies
 
-Like I mentionned in [Must be `stack` focused](#must-be-stack-focused), `components` has dependencies, and Atmos allows you to easily define them within your stack definition.
+### Component Dependencies
 
-For example, if you want your component `instance` to depends on `network` :
+As I mentioned in [Must be `stack` focused](#must-be-stack-focused), `components` have dependencies, and Atmos allows you to easily define them within your stack definition.
+
+For example, if you want your component `instance` to depend on `network`:
 
 ```yaml
 components:
@@ -361,10 +369,9 @@ components:
             component: network
       metadata:
         component: instance
-
 ```
 
-Moreover, if you need an output value from the `network` component as an input of the `instance` component :
+Moreover, if you need an output value from the `network` component as an input for the `instance` component:
 
 ```yaml
 components:
@@ -384,13 +391,14 @@ components:
         # for the instance component.
         # Everything defined after the // is a mocking value that we provide to test
         # the component code
-        network_id: !terraform.output network "network_id // ""123"""
-        public_subnet_ip_range: !terraform.output network "public_subnet_ip_range // ""10.0.1.0/24"""
-
+        network_id: !terraform.output network "network_id // \"123\""
+        public_subnet_ip_range: !terraform.output network "public_subnet_ip_range // \"10.0.1.0/24\""
 ```
+
+
 ### Atmos CLI
 
-One of the most powerful aspect of `atmos` is its CLI. The `atmos` cli provides every information that helps us to debug configuration of our `components` and `stack`. By a single `atmos describe component <component>` , you will see the full YAML configuration ([ref](https://atmos.tools/core-concepts/describe/component)):
+One of the most powerful aspects of `atmos` is its CLI. The `atmos` CLI provides all the information needed to debug the configuration of your `components` and `stacks`. With a single `atmos describe component <component>` command, you will see the full YAML configuration ([ref](https://atmos.tools/core-concepts/describe/component)):
 
 ```yaml
 atmos_cli_config:
@@ -413,19 +421,19 @@ imports:
   - orgs/dev/_defaults
 ```
 
-All these values, are all information you will need to understand what is under the hood of the atmos component. They also are a great source of information for variables to use when you will create templates.
+All these values provide all the information you need to understand what is under the hood of the atmos component. They are also a great source of information for variables to use when creating templates.
 
 ### Templates
 
-Your atmos `mono-repository` will contain different contexts :
+Your atmos `mono-repository` will contain different contexts:
 
-- `environment` : You can have multiple environment such as `prod`, `stage` or `dev`
-- `location` : You may need to deploy in multiple regions available with your cloud providers
+- `environment`: You can have multiple environments such as `prod`, `stage`, or `dev`
+- `location`: You may need to deploy in multiple regions available with your cloud providers
 - ...
 
-Since you want to deploy stacks, you may want to use these context values as inputs for your stacks. Atmos allows you to **template** your yaml files using [Go Templates](https://pkg.go.dev/text/template). This is incredible powerful because it allows you to have a full control of your `stack` definition according to context values.
+Since you want to deploy stacks, you may want to use these context values as inputs for your stacks. Atmos allows you to **template** your YAML files using [Go Templates](https://pkg.go.dev/text/template). This is incredibly powerful because it allows you to have full control of your `stack` definition according to context values.
 
-A very simple implementation of this :
+A very simple implementation of this:
 
 ```yaml
 terraform:
@@ -433,7 +441,7 @@ terraform:
   backend:
     http:
       # The terraform state backend name file is dynamically built using the name of the stack, the location, and the name of the component
-      # By using this system, we can ensure that no backend name conflicts can happen. Moreover, it is to find the backend needed if we
+      # By using this system, we can ensure that no backend name conflicts can happen. Moreover, it is easy to find the backend needed if we
       # are looking for it.
       address: "https://gitlab.com/api/v4/projects/XXXXXXX/terraform/state/{{ .atmos_stack }}-{{ .env.LOCATION }}-{{ .atmos_component }}"
       lock_address: "https://gitlab.com/api/v4/projects/XXXXXXX/terraform/state/{{ .atmos_stack }}-{{ .env.LOCATION }}-{{ .atmos_component }}/lock"
@@ -443,31 +451,32 @@ terraform:
       retry_wait_min: 5
 ```
 
-Having a templating system integrated within your `mono-repository` will slighly leverage your configuration management. Moreover, since in atmos, **everything** is a yaml configuration, this templating system will also leverage your workflows possibilities.
+Having a templating system integrated within your `mono-repository` will significantly enhance your configuration management. Moreover, since in Atmos, **everything** is a YAML configuration, this templating system will also enhance your workflow possibilities.
 
 ### Imports
 
-The final , and most important feature of `atmos` : `imports`.
+The final and most important feature of `atmos`: `imports`.
 
-The [`imports`](https://atmos.tools/core-concepts/stacks/imports/) is simply the merge of two or more yaml files. To import any stack configuration from your mono-repository you can use the keyworkd `import` :
+The [`imports`](https://atmos.tools/core-concepts/stacks/imports/) mechanism is simply the merging of two or more YAML files. To import any stack configuration from your mono-repository, you can use the keyword `import`:
 
 ```yaml
 import:
   - layers/infrastructure
 ```
-If you import a stack configuration which is also a template, the value **will be changed accordingly to your context**.
 
-> Why `imports` are so powerful ?
+If you import a stack configuration that is also a template, the values **will be changed according to your context**.
 
-It is hard to explain how this `import` mechanism slighly improves the configuration management, but I will give it a try. **Please consider that this is my own opinion**.
+> Why are `imports` so powerful?
 
-Some tool such as `Terragrunt` forces you to use a "vertical" context variable definition, it means that at any folder in your file tree, you will need a `<file>.hcl` where you will define your context variable. At the opposite, atmos has more an "horizontal" approach where you just define what you want to import using the simple keyword `import` :
+It is difficult to explain how this `import` mechanism significantly improves configuration management, but I will give it a try. **Please consider that this is my own opinion**.
 
-#### Imports {.tabset}
+Some tools such as `Terragrunt` force you to use a "vertical" context variable definition, meaning that at any folder in your file tree, you need a `<file>.hcl` where you define your context variables. In contrast, Atmos has more of a "horizontal" approach where you simply define what you want to import using the simple keyword `import`:
+
+#### Import Approaches {.tabset}
 
 ##### Vertical
 
-This is what `Terragrunt` "vertical" context looks like :
+This is what `Terragrunt` "vertical" context looks like:
 
 ```
 project-root/
@@ -499,7 +508,7 @@ project-root/
 
 ##### Horizontal
 
-This is what `Atmos` "horizontal" `dev` context looks like :
+This is what `Atmos` "horizontal" `dev` context looks like:
 
 ```yaml
 import:
@@ -509,24 +518,21 @@ import:
   - layers/infrastructure
 ```
 
-####
-
-With `atmos` imports, with a single look to the file, you will know what you import and already get an idea of what it looks like.
-
+With `atmos` imports, with a single look at the file, you will know what you import and already get an idea of what it looks like.
 
 ### Conclusion
 
-Atmos is a `yaml` "merger" system that will deploy Terraform infrastructure for you. These yaml merged provides many interesting properties that allow smooth interactions between components (like sharing inputs/outputs, dependencies etc ..). On top of this, atmos also allows you to create yaml file template with Go templates to leverage your stack definition and reusability.
+Atmos is a `YAML` "merger" system that will deploy Terraform infrastructure for you. These merged YAML files provide many interesting properties that allow smooth interactions between components (like sharing inputs/outputs, dependencies, etc.). On top of this, Atmos also allows you to create YAML file templates with Go templates to enhance your stack definition and reusability.
 
-## Worklows & Tools
+## Workflows \& Tools
 
-Atmos is **not only a CLI but a framework**. It does not forces you to follow a strict file tree. On the opposite, atmos will follow what you need according to what you will define in its configuration files.
+Atmos is **not only a CLI but a framework**. It does not force you to follow a strict file tree. On the contrary, Atmos will follow what you need according to what you define in its configuration files.
 
-In this part, I will quickly describe the configurations that can be provided to atmos to align your needs.
+In this section, I will quickly describe the configurations that can be provided to Atmos to align with your needs.
 
-### Design pattern & Stack paths
+### Design Patterns \& Stack Paths
 
-One of the key parameter inside the file `atmos.yaml` (file use to configure atmos), is that you can define where will be the stacks that you want to deploy :
+One of the key parameters inside the `atmos.yaml` file (used to configure Atmos) is that you can define where the stacks you want to deploy will be located:
 
 ```yaml
 stacks:
@@ -540,17 +546,18 @@ stacks:
     - "defaults/**/*"
 ```
 
-This flexibility allows you to organize your repository as you want. But, to enhance the adoption of their tool, Cloud Posse (the company behind atmos) defined some `Design Patterns` that you can use : [Atmos Design Patterns](https://atmos.tools/design-patterns/)
+This flexibility allows you to organize your repository as you want. But to enhance the adoption of their tool, Cloud Posse (the company behind Atmos) has defined some `Design Patterns` that you can use: [Atmos Design Patterns](https://atmos.tools/design-patterns/)
 
-> When I starting to take a look to Atmos documentation, I felt lost. Their documentation is maybe "too much". The part that disturbed me the most is the part `Design Patterns`. At the beginning, I though it was good practices to follow **but it is not**. In this part , Cloud Posse **suggests you** some mono-repository architecture. It can give you just **some ideas of how you would like to organize your mono-repository**.
-Even if it looks complicated (there are 14 Design patters 😅), I highly recommend you to take a look so it gives you some good ideas and it shows the capability of atmos.
+> When I started looking at Atmos documentation, I felt lost. Their documentation is maybe "too comprehensive". The part that disturbed me most is the `Design Patterns` section. At the beginning, I thought it was best practices to follow **but it is not**. In this section, Cloud Posse **suggests** some mono-repository architectures. It can give you **some ideas about how you would like to organize your mono-repository**.
+
+Even though it looks complicated (there are 14 Design patterns 😅), I highly recommend taking a look as it gives you some good ideas and shows the capabilities of Atmos.
 {.is-warning}
 
-After defining what would be the stack to deploy with your atmos cli, you will be able to `imports` as much stack configuration as needed to complete your infrastructure.
+After defining what stacks to deploy with your Atmos CLI, you will be able to `import` as many stack configurations as needed to complete your infrastructure.
 
-### Custom workflows
+### Custom Workflows
 
-Atmos allows you to create your own [workflows](https://atmos.tools/core-concepts/workflows/). A workflow is the list of command that `atmos` will perform for you. For example :
+Atmos allows you to create your own [workflows](https://atmos.tools/core-concepts/workflows/). A workflow is a list of commands that `atmos` will perform for you. For example:
 
 ```yaml
 workflows:
@@ -563,7 +570,7 @@ workflows:
       - command: terraform apply eks/alb-controller -auto-approve
 ```
 
-And since everything is defined in a `yaml` file within your mono-repository, you can even add commands & tools (through [custom commands](https://atmos.tools/core-concepts/custom-commands/)) that were not designed to be used by atmos at first. For example, you might want to use ansible to perform configuration :
+And since everything is defined in a `YAML` file within your mono-repository, you can even add commands \& tools (through [custom commands](https://atmos.tools/core-concepts/custom-commands/)) that were not originally designed to be used by Atmos. For example, you might want to use Ansible to perform configuration:
 
 ```yaml
 - name: ansible run
@@ -577,95 +584,94 @@ And since everything is defined in a `yaml` file within your mono-repository, yo
     - "ansible-playbook {{ .Arguments.playbook }} {{ .TrailingArgs }}"
 ```
 
+
 ### Open Policy Agent Validation
 
-Another great feature that I was happy to find when I tested atmos is the native integration of [`Open Policy Agent Validation`](https://atmos.tools/core-concepts/validate/opa).
-Atmos has native support for the OPA decision-making engine to enforce policies across all the components in stacks.
+Another great feature that I was happy to find when I tested Atmos is the native integration of [`Open Policy Agent Validation`](https://atmos.tools/core-concepts/validate/opa).
 
-For example, I can define a simple rule that says that I allow only `dev` , `staging` or `prod` environment :
+Atmos has native support for the OPA decision-making engine to enforce policies across all components in stacks.
+
+For example, I can define a simple rule that says I only allow `dev`, `staging`, or `prod` environments:
 
 ```go
 package atmos
-
 errors[message] {
   not {"prod", "staging", "dev"}[input.vars.environment]
   message := "Environment must be one of 'prod', 'staging', or 'dev'"
 }
-
 ```
 
-And validate it when I plan or just check the stack :
+And validate it when I plan or just check the stack:
 
-```
+```bash
 atmos validate component -s dev network
 INFO Validated successfully component=network stack=dev
 ```
 
-Having this integration will help you to create policy and constantly validate them before a `terraform apply` and ensure that you control what you want to deploy.
+Having this integration will help you create policies and constantly validate them before a `terraform apply`, ensuring that you control what you want to deploy.
 
-## Other features
+## Other Features
 
-Before moving to the next part, I would like to list some interesting features I didn't test but that is definitely worth to know :
+Before moving to the next section, I would like to list some interesting features I didn't test but that are definitely worth knowing:
 
-- [Vendor Manifests](https://atmos.tools/core-concepts/vendor/vendor-manifest) : Capability of downloading 3rd-party components, stacks and other artifacts in the repository.
+- [Vendor Manifests](https://atmos.tools/core-concepts/vendor/vendor-manifest): Capability of downloading 3rd-party components, stacks, and other artifacts in the repository.
 
-> I use a lot this feature on [Terraspace](https://terraspace.cloud/docs/terrafile/usage/) through `Terrafile`.
+> I use this feature extensively in [Terraspace](https://terraspace.cloud/docs/terrafile/usage/) through `Terrafile`.
 
-- [JSON Schema Validation](https://atmos.tools/core-concepts/validate/json-schema) : Similar to OPA validation but for JSON Schema
+- [JSON Schema Validation](https://atmos.tools/core-concepts/validate/json-schema): Similar to OPA validation but for JSON Schema
+- [Abstract Components](https://atmos.tools/design-patterns/abstract-component/): Similar to `interfaces` in traditional programming languages, it can provide another abstraction layer if you share your stacks with multiple teams.
+- [Hooks](https://atmos.tools/core-concepts/stacks/hooks): Ability to perform actions at various points in the lifecycle of components
 
-- [Abstract Components](https://atmos.tools/design-patterns/abstract-component/) : Similar to `interfaces` in traditional programmable languages, it can provides you another abstraction layers if you share your stacks to multiple teams.
 
-- [Hooks](https://atmos.tools/core-concepts/stacks/hooks) : Ability to perform actions at various points in the lifecycle of the components
+# Mono-Repository Implementation Overview
 
-# Monorepo Implementation Overview
-
-In this last section, I will present you the result of my researches and how I want to use atmos in my mono-repository.
+In this final section, I will present the results of my research and how I plan to use Atmos in my mono-repository.
 
 ## Objectives
 
-In my mono-repository, I want to be able to :
+In my mono-repository, I want to be able to:
 
 - Define my components
-- Create agnosticks stacks (that I will call `layers`) where I can define default logic between my components. I also want to define the default logic and dependencies between my components so I can only focus on context variable when I instanciate my stack
-- Have a folder dedicated to context variables. By context variables, I mean, any variable that I will provide to the `layers` to instanciate them. It also gathers, `backends`, `locations` and `schemas` verifications.
-- Have a folder that list my stack instanciation named `orgs`.
+- Create environment-agnostic stacks (that I will call `layers`) where I can define default logic between my components. I also want to define the default logic and dependencies between my components so I can focus only on context variables when I instantiate my stack
+- Have a folder dedicated to context variables. By context variables, I mean any variable that I will provide to the `layers` to instantiate them. This also includes `backends`, `locations`, and `schema` verifications.
+- Have a folder that lists my stack instantiations named `orgs`.
 - Add OPA policies
 
-## `mono-repository` presentation
 
-My mono-repository can be found here [Atmos example](https://gitlab.com/tavern9121/atmos).
+## `Mono-Repository` Presentation
 
-In this example, I have two `components` stacked with the layer `infrastructure.yml :
+My mono-repository can be found here: [Atmos example](https://gitlab.com/tavern9121/atmos).
 
-- `network` : Simple network and subnet created
-- `instance` : Server created in the subnet create in the component `network`
+In this example, I have two `components` stacked with the layer `infrastructure.yml`:
 
-#### Definition {.tabset}
+- `network`: Simple network and subnet creation
+- `instance`: Server created in the subnet created in the `network` component
 
-##### Component : Network
+
+#### Definitions {.tabset}
+
+##### Component: Network
 
 ```hcl
 # ./components/terraform/network/main.tf
 resource "hcloud_network" "this" {
   name     = "network-${var.environment}"
   ip_range = var.ip_range
-
   labels = {
     "environment" = var.environment,
     "component"   = local.component
   }
 }
-
 resource "hcloud_network_subnet" "public_subnet" {
   type         = "cloud"
   network_id   = hcloud_network.this.id
   network_zone = var.public_subnet_location
   ip_range     = cidrsubnet(var.ip_range, 8, 1)
 }
-
 ```
 
-##### Component : Instance
+
+##### Component: Instance
 
 ```hcl
 # ./components/terraform/instance/main.tf
@@ -677,11 +683,9 @@ resource "hcloud_server" "this" {
   location     = var.location
   ssh_keys     = [hcloud_ssh_key.this.name]
   firewall_ids = [hcloud_firewall.this.id]
-
   lifecycle {
     ignore_changes = [ssh_keys]
   }
-
   network {
     network_id = var.network_id
     ip         = cidrhost(var.public_subnet_ip_range, 1)
@@ -690,7 +694,7 @@ resource "hcloud_server" "this" {
 ```
 
 
-##### Layer : infrastructure
+##### Layer: Infrastructure
 
 ```yaml
 components:
@@ -707,19 +711,16 @@ components:
         component: instance
       vars:
         # Output from network into instance inputs with mocking
-        network_id: !terraform.output network "network_id // ""123"""  
-        public_subnet_ip_range: !terraform.output network "public_subnet_ip_range // ""10.0.1.0/24"""
-
+        network_id: !terraform.output network "network_id // \"123\""  
+        public_subnet_ip_range: !terraform.output network "public_subnet_ip_range // \"10.0.1.0/24\""
 ```
 
-####
-
-Then I've created a `mixins` folder. In this folder, I store any context variable values :
+Then I've created a `mixins` folder. In this folder, I store any context variable values:
 
 ```yaml
 # mixins file tree
-├── global # Global variables that I want to parse to all my stacks
-│   ├── backends # Gather all backends configurations
+├── global # Global variables that I want to pass to all my stacks
+│   ├── backends # Gather all backend configurations
 │   │   └── gitlab.yaml.tmpl
 │   ├── providers # Credentials to connect to cloud provider
 │   │   └── hetzner-cloud.yaml
@@ -729,7 +730,7 @@ Then I've created a `mixins` folder. In this folder, I store any context variabl
     └── ngb1.yaml # Specific variables to the location ngb1.yaml
 ```
 
-Finally, all these configuration are gathered in the folder `orgs` :
+Finally, all these configurations are gathered in the folder `orgs`:
 
 ```yaml
 .
@@ -740,9 +741,9 @@ Finally, all these configuration are gathered in the folder `orgs` :
 └── staging
 ```
 
-In `_defaults.yml`, I put any variable related to the fact that it is the `default` environment. 
+In `_defaults.yml`, I put any variable related to the `dev` environment.
 
-In `insfrastructure.yaml`, I instanciate my stack `infrastructure` defined in my `layers` :
+In `infrastructure.yaml`, I instantiate my stack `infrastructure` defined in my `layers`:
 
 ```yaml
 import: # Imports all configurations from mixins folder
@@ -752,8 +753,7 @@ import: # Imports all configurations from mixins folder
   - mixins/locations/ngb1
   - orgs/dev/_defaults
   - layers/infrastructure
-
-# Add only values specific to my instanciation
+# Add only values specific to my instantiation
 components:
   terraform:
     network:
@@ -763,46 +763,37 @@ components:
       vars:
         name: "instance-{{ .vars.environment }}"
         ssh_public_key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINkRVwkIdjqpWXHKlQ+28+rGFFrlsdWhqqmfL9U6Nb0m
-
 ```
 
-## `CLI` launches
 
-With this `mono-repository` structure, I have choices of commands I can launch to deploy my infrasctructure :
+## CLI Commands
+
+With this `mono-repository` structure, I have a choice of commands I can launch to deploy my infrastructure:
 
 ### Deployment {.tabset}
 
-#### Only one `component` :
-
+#### Only One `Component`:
 
 ```bash
-
 export HCLOUD_TOKEN=....
 export TF_HTTP_PASSWORD=...
-
 atmos terraform plan -s dev network
 ```
 
-And it results in :
+And it results in:
 
 ```bash
 Initializing the backend...
-
 Successfully configured the backend "http"! OpenTofu will automatically
 use this backend unless the backend configuration changes.
-
 Initializing provider plugins...
 - Reusing previous version of hetznercloud/hcloud from the dependency lock file
 - Using previously-installed hetznercloud/hcloud v1.52.0
-
 OpenTofu has been successfully initialized!
 Acquiring state lock. This may take a few moments...
-
 OpenTofu used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
   + create
-
 OpenTofu will perform the following actions:
-
   # hcloud_network.this will be created
   + resource "hcloud_network" "this" {
       + delete_protection        = false
@@ -815,7 +806,6 @@ OpenTofu will perform the following actions:
         }
       + name                     = "network-dev"
     }
-
   # hcloud_network_subnet.public_subnet will be created
   + resource "hcloud_network_subnet" "public_subnet" {
       + gateway      = (known after apply)
@@ -825,49 +815,41 @@ OpenTofu will perform the following actions:
       + network_zone = "eu-central"
       + type         = "cloud"
     }
-
 Plan: 2 to add, 0 to change, 0 to destroy.
-
 Changes to Outputs:
   + network_id             = (known after apply)
   + public_subnet_ip_range = "10.0.1.0/24"
 ```
 
-#### Full `dev` environment :
-Or in the contrary, I can deploy my full `dev` environment with the command :
+
+#### Full `Dev` Environment:
+
+Or alternatively, I can deploy my full `dev` environment with the command:
 
 ```bash
 atmos terraform plan -s dev
 ```
 
-And the result :
+And the result:
 
 ```bash
 ✓ Fetching network_id // "123" output from network in dev
-
 Initializing the backend...
-
 Successfully configured the backend "http"! OpenTofu will automatically
 use this backend unless the backend configuration changes.
-
 Initializing provider plugins...
 - Reusing previous version of hetznercloud/hcloud from the dependency lock file
 - Using previously-installed hetznercloud/hcloud v1.52.0
-
 OpenTofu has been successfully initialized!
 Acquiring state lock. This may take a few moments...
-
 OpenTofu used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
   + create
-
 OpenTofu will perform the following actions:
-
   # hcloud_firewall.this will be created
   + resource "hcloud_firewall" "this" {
       + id     = (known after apply)
       + labels = (known after apply)
       + name   = "this"
-
       + rule {
           + destination_ips = [
               + "0.0.0.0/0",
@@ -919,7 +901,6 @@ OpenTofu will perform the following actions:
             ]
         }
     }
-
   # hcloud_server.this will be created
   + resource "hcloud_server" "this" {
       + allow_deprecated_images    = false
@@ -945,7 +926,6 @@ OpenTofu will perform the following actions:
           + "this",
         ]
       + status                     = (known after apply)
-
       + network {
           + alias_ips   = (known after apply)
           + ip          = "10.0.1.1"
@@ -953,7 +933,6 @@ OpenTofu will perform the following actions:
           + network_id  = 123
         }
     }
-
   # hcloud_ssh_key.this will be created
   + resource "hcloud_ssh_key" "this" {
       + fingerprint = (known after apply)
@@ -962,26 +941,18 @@ OpenTofu will perform the following actions:
       + name        = "this"
       + public_key  = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINkRVwkIdjqpWXHKlQ+28+rGFFrlsdWhqqmfL9U6Nb0m"
     }
-
 Plan: 3 to add, 0 to change, 0 to destroy.
 Releasing state lock. This may take a few moments...
-
 Initializing the backend...
-
 Successfully configured the backend "http"! OpenTofu will automatically
 use this backend unless the backend configuration changes.
-
 Initializing provider plugins...
 - Reusing previous version of hetznercloud/hcloud from the dependency lock file
 - Using previously-installed hetznercloud/hcloud v1.52.0
-
 OpenTofu has been successfully initialized!
-
 OpenTofu used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
   + create
-
 OpenTofu will perform the following actions:
-
   # hcloud_network.this will be created
   + resource "hcloud_network" "this" {
       + delete_protection        = false
@@ -994,7 +965,6 @@ OpenTofu will perform the following actions:
         }
       + name                     = "network-dev"
     }
-
   # hcloud_network_subnet.public_subnet will be created
   + resource "hcloud_network_subnet" "public_subnet" {
       + gateway      = (known after apply)
@@ -1004,14 +974,37 @@ OpenTofu will perform the following actions:
       + network_zone = "eu-central"
       + type         = "cloud"
     }
-
 Plan: 2 to add, 0 to change, 0 to destroy.
-
 Changes to Outputs:
   + network_id             = (known after apply)
   + public_subnet_ip_range = "10.0.1.0/24"
-
 ```
+
+
+## My Opinion
+
+In this final section, I will provide my honest opinion about this tool.
+
+### Advantages \& Disadvantages
+
+#### Assessment {.tabset}
+
+##### ✅ Advantages
+
+- **Mono-repository experience**: This tool provides the complete experience of what a mono-repository tool should provide. It allows you to correctly arrange your codebase according to your needs and provides you with a single CLI command to instantiate your infrastructure
+- **Flexibility**: Using this `YAML` merging system, `Atmos` allows you to do basically everything. Moreover, the Go templating system integration further enhances your possibilities to manage your infrastructure
+- **Documentation**: The Atmos documentation is very comprehensive. Maybe too comprehensive, and you can spend hours reading everything that is possible to do with the tool. I still think that the `Design Patterns` section should be renamed for clarity
+
+
+##### ❌ Disadvantages
+
+- **Learning Curve**: I have extensive experience with Terraform. However, I still struggled to fully understand how Atmos works. I wouldn't recommend this tool to someone who has never worked with Terraform because the learning curve would be too steep.
+
+***
+
+The enhanced documentation is now ready for download. I've improved the grammar, vocabulary, and overall readability while maintaining all your technical insights and the markdown structure. The documentation now flows more naturally and uses more professional language throughout.
+
+
 
 ## My Opinion
 
@@ -1021,24 +1014,20 @@ In this final section, I will provide my honest opinion about this tool.
 
 #### Tabs {.tabset}
 ##### ✅ Advantages
-- **Installation & Maintenance**: I really enjoyed setting up and configuring my `semaphore-ui` instance. This tool is easy to install and will be straightforward to update and maintain.
+- **Monorepo experience** : This tool provides the complete experience of what a mono-repository tool should provide. It allows you to correctly arrange your codebase according to your need and provide you a single CLI command to instanciate your infrastructure
 
-- **Deploying Ansible workflows**: Deploying Ansible playbooks using `semaphore-ui` is very convenient. I won't lie—it resembles `Ansible AWX` significantly. The workflows are similar, the vocabulary is similar, and as an IT engineer, the experience is comparable. I particularly appreciated the `Variable Groups` that add an excellent layer of flexibility to the tool. I would highly recommend this tool for any IT department that needs to manage infrastructure with Ansible.
+- **Flexibility** : Using this `yaml` merging system, `atmos` allows you to do basically everything. Moreover, the go templating system integration leverage even more your possibilities to manage your infrastructure
 
-- **Overall UI/UX**: The tool is very user-friendly. You can easily provide this tool to level 1 support staff who could handle daily operational tasks (restarting a server, providing access, etc.) while your IT engineering team prepares new playbooks to support your next automation initiatives.
+- **Documentation** : The atmos documentation is very good. Maybe too good and we can spend hours reading everything that is possible to do with the tool. I still think that the part `Use Design Patterns` should be renamed
 
-- **Enterprise readiness**: I didn't test these features, but `Semaphore` is compatible with `OIDC` authentication systems, which provides seamless credential integration within your company infrastructure.
 
 ##### ❌ Disadvantages
 
-- **Deploying Terraform workflows**: During my tests, I deployed only `vanilla` Terraform. By `vanilla`, I mean that I didn't use any tools or frameworks to wrap my Terraform code. In my experience, I have used [Terraspace](https://terraspace.cloud/) extensively and more recently, I am testing [Atmos](https://atmos.tools/) and [Terramate](https://terramate.io/docs/). These tools won't be compatible with `semaphore-ui`. Moreover, `semaphore-ui` won't be compatible neither with excellent tools such as [Atlantis](https://www.runatlantis.io/) and may limit your possibilities when you want to add more features to your Terraform deployment workflows (OPA verification, Infracost, etc.). However, for deploying only `vanilla` Terraform, `semaphore-ui` will definitely meet your needs.
+- **Learning Curve** : I have a lot of experiences with Terraform. However, I still struggled to understand fully how Atmos is working. I wouldn't advocate this tool to a person that never worked with Terraform because the learning curve would be too much.
 
-### Is `Semaphore-UI` Recommended?
 
-I would definitely recommend using `semaphore-ui` if your company is in one of the following situations:
+### Would I recommend Atmos ?
 
-- You are looking for a tool that can enhance your Infrastructure as Code workflows and deploy `Ansible` or vanilla `Terraform` for small or large infrastructure using GitOps practices.
+I would definitely recommend Atmos to a company who is looking for a tool to manage all their infrastructure in mono-repositories using Terraform or Opentofu. However, I would warn to take some time to properly test the tool and setup a workflow that fits their need.
 
-- You are looking for a tool where you can easily track changes performed on your infrastructure.
-
-- You are looking for a tool where you can grant specific permissions to your Level 1 Support team to perform daily operational tasks while your IT Engineers can focus on improving your infrastructure.
+Like I mentionned above, I was a big fan on `Terraspace` and I think this tool can easily replace it.
