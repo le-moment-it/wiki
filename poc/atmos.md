@@ -764,8 +764,6 @@ components:
         name: "instance-{{ .vars.environment }}"
         ssh_public_key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINkRVwkIdjqpWXHKlQ+28+rGFFrlsdWhqqmfL9U6Nb0m
 ```
-
-
 ## CLI Commands
 
 With this `mono-repository` structure, I have a choice of commands I can launch to deploy my infrastructure:
