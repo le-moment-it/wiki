@@ -745,7 +745,7 @@ In `_defaults.yml`, I put any variable related to the fact that it is the `defau
 In `insfrastructure.yaml`, I instanciate my stack `infrastructure` defined in my `layers` :
 
 ```yaml
-import:
+import: # Imports all configurations from mixins folder
   - mixins/global/backends/gitlab
   - mixins/global/providers/hetzner-cloud
   - mixins/global/schemas/environment
@@ -753,6 +753,7 @@ import:
   - orgs/dev/_defaults
   - layers/infrastructure
 
+# Add only values specific to my instanciation
 components:
   terraform:
     network:
@@ -764,3 +765,280 @@ components:
         ssh_public_key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINkRVwkIdjqpWXHKlQ+28+rGFFrlsdWhqqmfL9U6Nb0m
 
 ```
+
+## `CLI` launches
+
+With this `mono-repository` structure, I have choices of commands I can launch to deploy my infrasctructure :
+
+### Deployment {.tabset}
+
+#### Only one `component` :
+
+
+```bash
+
+export HCLOUD_TOKEN=....
+export TF_HTTP_PASSWORD=...
+
+atmos terraform plan -s dev network
+```
+
+And it results in :
+
+```bash
+Initializing the backend...
+
+Successfully configured the backend "http"! OpenTofu will automatically
+use this backend unless the backend configuration changes.
+
+Initializing provider plugins...
+- Reusing previous version of hetznercloud/hcloud from the dependency lock file
+- Using previously-installed hetznercloud/hcloud v1.52.0
+
+OpenTofu has been successfully initialized!
+Acquiring state lock. This may take a few moments...
+
+OpenTofu used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+OpenTofu will perform the following actions:
+
+  # hcloud_network.this will be created
+  + resource "hcloud_network" "this" {
+      + delete_protection        = false
+      + expose_routes_to_vswitch = false
+      + id                       = (known after apply)
+      + ip_range                 = "10.0.0.0/16"
+      + labels                   = {
+          + "component"   = "network"
+          + "environment" = "dev"
+        }
+      + name                     = "network-dev"
+    }
+
+  # hcloud_network_subnet.public_subnet will be created
+  + resource "hcloud_network_subnet" "public_subnet" {
+      + gateway      = (known after apply)
+      + id           = (known after apply)
+      + ip_range     = "10.0.1.0/24"
+      + network_id   = (known after apply)
+      + network_zone = "eu-central"
+      + type         = "cloud"
+    }
+
+Plan: 2 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + network_id             = (known after apply)
+  + public_subnet_ip_range = "10.0.1.0/24"
+```
+
+#### Full `dev` environment :
+Or in the contrary, I can deploy my full `dev` environment with the command :
+
+```bash
+atmos terraform plan -s dev
+```
+
+And the result :
+
+```bash
+✓ Fetching network_id // "123" output from network in dev
+
+Initializing the backend...
+
+Successfully configured the backend "http"! OpenTofu will automatically
+use this backend unless the backend configuration changes.
+
+Initializing provider plugins...
+- Reusing previous version of hetznercloud/hcloud from the dependency lock file
+- Using previously-installed hetznercloud/hcloud v1.52.0
+
+OpenTofu has been successfully initialized!
+Acquiring state lock. This may take a few moments...
+
+OpenTofu used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+OpenTofu will perform the following actions:
+
+  # hcloud_firewall.this will be created
+  + resource "hcloud_firewall" "this" {
+      + id     = (known after apply)
+      + labels = (known after apply)
+      + name   = "this"
+
+      + rule {
+          + destination_ips = [
+              + "0.0.0.0/0",
+              + "::/0",
+            ]
+          + direction       = "out"
+          + port            = "any"
+          + protocol        = "tcp"
+          + source_ips      = []
+        }
+      + rule {
+          + destination_ips = [
+              + "0.0.0.0/0",
+              + "::/0",
+            ]
+          + direction       = "out"
+          + port            = "any"
+          + protocol        = "udp"
+          + source_ips      = []
+        }
+      + rule {
+          + destination_ips = []
+          + direction       = "in"
+          + port            = "22"
+          + protocol        = "tcp"
+          + source_ips      = [
+              + "0.0.0.0/0",
+              + "::/0",
+            ]
+        }
+      + rule {
+          + destination_ips = []
+          + direction       = "in"
+          + port            = "443"
+          + protocol        = "tcp"
+          + source_ips      = [
+              + "0.0.0.0/0",
+              + "::/0",
+            ]
+        }
+      + rule {
+          + destination_ips = []
+          + direction       = "in"
+          + port            = "80"
+          + protocol        = "tcp"
+          + source_ips      = [
+              + "0.0.0.0/0",
+              + "::/0",
+            ]
+        }
+    }
+
+  # hcloud_server.this will be created
+  + resource "hcloud_server" "this" {
+      + allow_deprecated_images    = false
+      + backup_window              = (known after apply)
+      + backups                    = false
+      + datacenter                 = (known after apply)
+      + delete_protection          = false
+      + firewall_ids               = (known after apply)
+      + id                         = (known after apply)
+      + ignore_remote_firewall_ids = false
+      + image                      = "debian-12"
+      + ipv4_address               = (known after apply)
+      + ipv6_address               = (known after apply)
+      + ipv6_network               = (known after apply)
+      + keep_disk                  = false
+      + location                   = "nbg1"
+      + name                       = "instance-dev"
+      + primary_disk_size          = (known after apply)
+      + rebuild_protection         = false
+      + server_type                = "cx22"
+      + shutdown_before_deletion   = false
+      + ssh_keys                   = [
+          + "this",
+        ]
+      + status                     = (known after apply)
+
+      + network {
+          + alias_ips   = (known after apply)
+          + ip          = "10.0.1.1"
+          + mac_address = (known after apply)
+          + network_id  = 123
+        }
+    }
+
+  # hcloud_ssh_key.this will be created
+  + resource "hcloud_ssh_key" "this" {
+      + fingerprint = (known after apply)
+      + id          = (known after apply)
+      + labels      = {}
+      + name        = "this"
+      + public_key  = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINkRVwkIdjqpWXHKlQ+28+rGFFrlsdWhqqmfL9U6Nb0m"
+    }
+
+Plan: 3 to add, 0 to change, 0 to destroy.
+Releasing state lock. This may take a few moments...
+
+Initializing the backend...
+
+Successfully configured the backend "http"! OpenTofu will automatically
+use this backend unless the backend configuration changes.
+
+Initializing provider plugins...
+- Reusing previous version of hetznercloud/hcloud from the dependency lock file
+- Using previously-installed hetznercloud/hcloud v1.52.0
+
+OpenTofu has been successfully initialized!
+
+OpenTofu used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+OpenTofu will perform the following actions:
+
+  # hcloud_network.this will be created
+  + resource "hcloud_network" "this" {
+      + delete_protection        = false
+      + expose_routes_to_vswitch = false
+      + id                       = (known after apply)
+      + ip_range                 = "10.0.0.0/16"
+      + labels                   = {
+          + "component"   = "network"
+          + "environment" = "dev"
+        }
+      + name                     = "network-dev"
+    }
+
+  # hcloud_network_subnet.public_subnet will be created
+  + resource "hcloud_network_subnet" "public_subnet" {
+      + gateway      = (known after apply)
+      + id           = (known after apply)
+      + ip_range     = "10.0.1.0/24"
+      + network_id   = (known after apply)
+      + network_zone = "eu-central"
+      + type         = "cloud"
+    }
+
+Plan: 2 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + network_id             = (known after apply)
+  + public_subnet_ip_range = "10.0.1.0/24"
+
+```
+
+## My Opinion
+
+In this final section, I will provide my honest opinion about this tool.
+
+### Advantages & Disadvantages
+
+#### Tabs {.tabset}
+##### ✅ Advantages
+- **Installation & Maintenance**: I really enjoyed setting up and configuring my `semaphore-ui` instance. This tool is easy to install and will be straightforward to update and maintain.
+
+- **Deploying Ansible workflows**: Deploying Ansible playbooks using `semaphore-ui` is very convenient. I won't lie—it resembles `Ansible AWX` significantly. The workflows are similar, the vocabulary is similar, and as an IT engineer, the experience is comparable. I particularly appreciated the `Variable Groups` that add an excellent layer of flexibility to the tool. I would highly recommend this tool for any IT department that needs to manage infrastructure with Ansible.
+
+- **Overall UI/UX**: The tool is very user-friendly. You can easily provide this tool to level 1 support staff who could handle daily operational tasks (restarting a server, providing access, etc.) while your IT engineering team prepares new playbooks to support your next automation initiatives.
+
+- **Enterprise readiness**: I didn't test these features, but `Semaphore` is compatible with `OIDC` authentication systems, which provides seamless credential integration within your company infrastructure.
+
+##### ❌ Disadvantages
+
+- **Deploying Terraform workflows**: During my tests, I deployed only `vanilla` Terraform. By `vanilla`, I mean that I didn't use any tools or frameworks to wrap my Terraform code. In my experience, I have used [Terraspace](https://terraspace.cloud/) extensively and more recently, I am testing [Atmos](https://atmos.tools/) and [Terramate](https://terramate.io/docs/). These tools won't be compatible with `semaphore-ui`. Moreover, `semaphore-ui` won't be compatible neither with excellent tools such as [Atlantis](https://www.runatlantis.io/) and may limit your possibilities when you want to add more features to your Terraform deployment workflows (OPA verification, Infracost, etc.). However, for deploying only `vanilla` Terraform, `semaphore-ui` will definitely meet your needs.
+
+### Is `Semaphore-UI` Recommended?
+
+I would definitely recommend using `semaphore-ui` if your company is in one of the following situations:
+
+- You are looking for a tool that can enhance your Infrastructure as Code workflows and deploy `Ansible` or vanilla `Terraform` for small or large infrastructure using GitOps practices.
+
+- You are looking for a tool where you can easily track changes performed on your infrastructure.
+
+- You are looking for a tool where you can grant specific permissions to your Level 1 Support team to perform daily operational tasks while your IT Engineers can focus on improving your infrastructure.
