@@ -999,3 +999,7 @@ In this final section, I will provide my honest opinion about this tool.
 ##### ❌ Disadvantages
 
 - **Learning Curve**: I have extensive experience with Terraform. However, I still struggled to fully understand how Atmos works. I wouldn't recommend this tool to someone who has never worked with Terraform because the learning curve would be too steep.
+
+### Would I recommend Atmos
+
+I would definitely recommend Atmos to a company that is looking for a tool that need to deploy complex infrastructure in different environment. However, the company should take some time to test atmos and define what is the best workflow to fits their needs. I personally was looking for a replacement of Terraspace, and I've found it
