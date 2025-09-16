@@ -764,6 +764,7 @@ components:
         name: "instance-{{ .vars.environment }}"
         ssh_public_key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINkRVwkIdjqpWXHKlQ+28+rGFFrlsdWhqqmfL9U6Nb0m
 ```
+
 ## CLI Commands
 
 With this `mono-repository` structure, I have a choice of commands I can launch to deploy my infrastructure:
@@ -979,25 +980,25 @@ Changes to Outputs:
 ```
 
 
-## My Opinion
+# My Opinion
 
 In this final section, I will provide my honest opinion about this tool.
 
-### Advantages \& Disadvantages
+## Advantages \& Disadvantages
 
-#### Assessment {.tabset}
+### Assessment {.tabset}
 
-##### ✅ Advantages
+#### ✅ Advantages
 
 - **Mono-repository experience**: This tool provides the complete experience of what a mono-repository tool should provide. It allows you to correctly arrange your codebase according to your needs and provides you with a single CLI command to instantiate your infrastructure
 - **Flexibility**: Using this `YAML` merging system, `Atmos` allows you to do basically everything. Moreover, the Go templating system integration further enhances your possibilities to manage your infrastructure
 - **Documentation**: The Atmos documentation is very comprehensive. Maybe too comprehensive, and you can spend hours reading everything that is possible to do with the tool. I still think that the `Design Patterns` section should be renamed for clarity
 
 
-##### ❌ Disadvantages
+#### ❌ Disadvantages
 
 - **Learning Curve**: I have extensive experience with Terraform. However, I still struggled to fully understand how Atmos works. I wouldn't recommend this tool to someone who has never worked with Terraform because the learning curve would be too steep.
 
-### Would I recommend Atmos
+## Would I recommend Atmos
 
 I would definitely recommend Atmos to a company that is looking for a tool that need to deploy complex infrastructure in different environment. However, the company should take some time to test atmos and define what is the best workflow to fits their needs. I personally was looking for a replacement of Terraspace, and I've found it
